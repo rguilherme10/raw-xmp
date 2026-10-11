@@ -179,6 +179,18 @@ def cmd_skin_debug(a) -> int:
     return 0
 
 
+def cmd_make_style(a) -> int:
+    from ..config import ROOT
+    from ..style_builder import write_style
+    dest, notes = write_style(a.xmps, a.name, Path(a.profiles_dir) if a.profiles_dir else ROOT / "profiles",
+                              a.with_template, a.force)
+    LOGGER.info(f"Estilo gravado em {dest}")
+    for n in notes:
+        LOGGER.info(f"  {n}")
+    LOGGER.info(f"Use:  python main.py process PASTA --style {a.name}")
+    return 0
+
+
 def cmd_styles(a) -> int:
     print("Estilos disponíveis:", ", ".join(["base"] + list_styles()))
     return 0
@@ -242,6 +254,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--log-file")
     p.set_defaults(func=cmd_skin_debug)
 
+    p = sub.add_parser("make-style", help="cria um estilo (YAML) a partir de um ou mais XMPs seus")
+    p.add_argument("xmps", nargs="+", help="XMPs de exemplo (use vários para obter a mediana)")
+    p.add_argument("--name", required=True, help="nome do estilo (profiles/styles/NOME.yaml)")
+    p.add_argument("--with-template", action="store_true",
+                   help="copia o 1º XMP como template estrutural (preserva Look, crop e formato de elementos)")
+    p.add_argument("--force", action="store_true", help="sobrescreve estilo existente")
+    p.add_argument("--profiles-dir", help=argparse.SUPPRESS)
+    p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
+    p.add_argument("--log-file")
+    p.set_defaults(func=cmd_make_style)
+
     p = sub.add_parser("styles", help="lista os perfis de estilo")
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
     p.add_argument("--log-file")
@@ -254,7 +277,7 @@ def main(argv: list[str] | None = None) -> int:
     configure(getattr(a, "verbose", False), getattr(a, "quiet", False), getattr(a, "log_file", None))
     try:
         return a.func(a)
-    except (FileNotFoundError, ValueError) as exc:
+    except (FileNotFoundError, FileExistsError, ValueError) as exc:
         LOGGER.error(str(exc))
         return 1
     except KeyboardInterrupt:

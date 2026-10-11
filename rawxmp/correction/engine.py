@@ -180,7 +180,8 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
     P["AlreadyApplied"] = False
     P["RawFileName"] = info.file_name
 
-    curves = {"ToneCurvePV2012": curve.points, "ToneCurve": curve.points,
+    legacy = [tuple(p) for p in st["tone_curve"].get("legacy_points") or curve.points]
+    curves = {"ToneCurvePV2012": curve.points, "ToneCurve": legacy,
               "ToneCurvePV2012Red": [(0, 0), (255, 255)], "ToneCurvePV2012Green": [(0, 0), (255, 255)],
               "ToneCurvePV2012Blue": [(0, 0), (255, 255)]}
     t3 = time.perf_counter()

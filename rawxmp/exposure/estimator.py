@@ -118,6 +118,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         why = f"{crushed * 100:.1f}% de pixels esmagados em preto → aliviar"
     else:
         bv, why = 0.0, "ponto de preto adequado"
+    bv += cfg.get("style.blacks_bias", 0)
     blacks = Estimate(round(bv), 0.75, why)
 
     # Whites --------------------------------------------------------------------------------
@@ -129,6 +130,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     else:
         wv = clamp((wcfg["p999_target_v"] - p999_v) * wcfg["gain"], -20, wcfg["max_gain"])
         wwhy = f"p99.9 pós-exposição V={p999_v:.2f} (alvo {wcfg['p999_target_v']})"
+    wv += cfg.get("style.whites_bias", 0)
     whites = Estimate(round(wv), 0.7, wwhy)
 
     # Contrast ------------------------------------------------------------------------------

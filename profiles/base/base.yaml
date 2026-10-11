@@ -10,6 +10,8 @@ style:
   dehaze: 0
   exposure_bias: 0.0              # stops added after the automatic estimate
   contrast_bias: 0
+  whites_bias: 0
+  blacks_bias: 0
   highlights_bias: 0
   shadows_bias: 0
   tone_curve:

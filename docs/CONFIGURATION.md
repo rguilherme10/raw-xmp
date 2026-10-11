@@ -30,7 +30,7 @@ Rode com `--config meus_limites.yaml` (só as chaves que quiser mudar).
 
 ## Estilos (`profiles/styles/*.yaml`, seção `style:`)
 `camera_profile`, `saturation`, `vibrance`, `clarity`, `texture`, `dehaze`, `exposure_bias`, `contrast_bias`, `highlights_bias`,
-`shadows_bias`, `tone_curve.points` (x,y 0–255) e `.parametric`, `hsl.{hue,saturation,luminance}.<cor>`, `sharpening`, `noise_reduction`,
+`shadows_bias`, `whites_bias`, `blacks_bias` (somados à estimativa por foto), `template` (XMP estrutural; caminho relativo à raiz do projeto), `tone_curve.legacy_points` (curva `ToneCurve` legada), `tone_curve.points` (x,y 0–255) e `.parametric`, `hsl.{hue,saturation,luminance}.<cor>`, `sharpening`, `noise_reduction`,
 `color_grade`, `calibration`, `vignette`. Um estilo também pode sobrescrever qualquer outra seção (ex.: `portrait` sobe `exposure.skin_weight`).
 Criar um estilo = copiar `profiles/styles/portrait.yaml`, renomear e usar `--style nome`.
 Entregues: `base`, `portrait`, `landscape`, `neutral`.

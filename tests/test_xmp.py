@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +9,7 @@ from rawxmp.xmp.model import XMPModel, XMPModelError
 from rawxmp.xmp.parser import parse_xmp
 from rawxmp.xmp.schema import CRS_NS, SPECS, format_value
 from rawxmp.xmp.serializer import XMPSerializer
+from rawxmp.xmp.parser import parse_xmp as _p
 
 CRS = "{" + CRS_NS + "}"
 
@@ -106,3 +108,39 @@ def test_generated_xmp_has_all_expected_sections(decisions, cfg):
               "ParametricShadows", "RedHue", "HueAdjustmentRed", "LuminanceAdjustmentMagenta"):
         assert k in m.attrs, k
     assert {"ToneCurve", "ToneCurvePV2012", "ToneCurvePV2012Red"} <= set(m.curves)
+
+
+# ---- real Lightroom/Bridge sidecars supplied by the user (tests/data) ------------------------------
+REF = Path(__file__).parent / "data"
+
+
+def test_real_reference_xmp_is_parsed_in_element_form():
+    m = parse_xmp(REF / "ref_a.xmp")
+    assert m.form == "elements" and len(m.attrs) > 100
+    assert m.attrs["Exposure2012"] == "2.17" and m.attrs["Temperature"] == "5910"
+    assert m.curves["ToneCurve"][1] == (32, 22) and m.curves["ToneCurvePV2012"] == [(0, 0), (255, 255)]
+    assert any("Look" in x for x in m.extra_xml)                      # nested Look block preserved verbatim
+    assert m.other_attrs.get("xmp:Rating") == "0"
+
+
+def test_real_reference_roundtrips_without_losing_anything():
+    m = parse_xmp(REF / "ref_a.xmp")
+    again = parse_xmp(XMPSerializer.serialize(m))
+    assert dict(again.attrs) == dict(m.attrs) and dict(again.curves) == dict(m.curves)
+    assert again.form == "elements" and len(again.extra_xml) == len(m.extra_xml)
+
+
+def test_real_reference_validates_and_empty_file_does_not():
+    from rawxmp.validation.xmp_validator import validate_model
+    assert validate_model(parse_xmp(REF / "ref_a.xmp"), None).ok
+    empty = XMPModel()
+    assert not validate_model(empty, None).ok          # regression: "OK" with zero parameters
+
+
+def test_template_never_leaks_per_image_white_balance(decisions, cfg):
+    tpl = parse_xmp(REF / "ref_a.xmp")
+    d = decisions["normal"]                             # As Shot → engine writes no Temperature/Tint
+    m = build_model(d.params, d.curves, cfg, tpl)
+    assert "Temperature" not in m.attrs and "Tint" not in m.attrs
+    assert m.attrs["WhiteBalance"] == "As Shot" and m.attrs["Version"] == '"15.4"'   # template's own version kept
+    assert m.form == "elements" and m.attrs["HasCrop"] == "True"                  # structure of the user's file kept

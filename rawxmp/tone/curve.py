@@ -45,7 +45,7 @@ def build_curve(cfg, estimates: dict[str, Estimate], stats, skin) -> CurveResult
         return int(np.argmin([abs(v - x) for v in xs]))
 
     # image-driven S-curve amount: positive (more contrast) when the contrast slider is positive
-    c = estimates["contrast"].value
+    c = estimates["contrast"].value - cfg.get("style.contrast_bias", 0)     # image-measured part only
     s_levels = clamp(c * tc["contrast_to_levels"], -tc["max_s_levels"] / 2, tc["max_s_levels"])
     if abs(s_levels) >= 0.5:
         ys[idx(64)] -= s_levels
@@ -60,7 +60,7 @@ def build_curve(cfg, estimates: dict[str, Estimate], stats, skin) -> CurveResult
         notes.append(f"sombras esmagadas ({stats.near_black_fraction * 100:.1f}%): +{lift:.1f} níveis em 32")
 
     # highlights: roll off when clipping pressure exists
-    hv = estimates["highlights"].value
+    hv = estimates["highlights"].value - cfg.get("style.highlights_bias", 0)
     if hv < -15:
         r = clip01(-hv / 60) * tc["highlight_rolloff_levels"]
         ys[idx(192)] -= r

@@ -51,6 +51,8 @@ def validate_model(model: XMPModel, cfg: Config | None = None, reference: XMPMod
             rep.errors.append(f"namespace '{pfx}' aponta para {uri!r}, esperado {NS[pfx]!r}")
     if model.namespaces.get("crs") != CRS_NS:
         rep.errors.append("namespace crs inválido")
+    if not model.attrs:
+        rep.errors.append("nenhum parâmetro crs:* encontrado (arquivo vazio ou formato não reconhecido)")
     # --- scalar parameters --------------------------------------------------------------
     for name, text in model.attrs.items():
         spec = SPECS.get(name)

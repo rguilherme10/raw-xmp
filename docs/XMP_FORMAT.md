@@ -1,9 +1,14 @@
 # Formato XMP
 
-> **Aviso de proveniência.** O XMP de referência do usuário **não estava disponível** quando o gerador foi escrito. O esquema abaixo
-> reproduz o vocabulário público `crs:*` dos sidecars do Camera Raw/Lightroom. Para alinhar 100 % ao seu arquivo:
-> `python main.py validate seu_arquivo.xmp --reference seu_arquivo.xmp --no-limits` (lista atributos que o gerador não conhece) e
-> use `--template seu_arquivo.xmp` para **preservar** campos extras ao gerar.
+> **Proveniência.** O esquema nasceu do vocabulário público `crs:*`. Depois foram fornecidos 3 XMPs reais (Lightroom/Bridge, Camera Raw 5.3 toolkit,
+> `tests/data/ref_*.xmp`); o parser/gerador foi ajustado a eles e há testes sobre eles. **Ainda não foi possível abrir os XMPs *gerados* no Lightroom
+> aqui** — a prova disso é o seu uso. Relato de uso: um XMP gerado (forma de atributos) foi aplicado no Lightroom com resultado visual correto.
+
+## Duas formas equivalentes
+* **atributos** (padrão): `<rdf:Description crs:Exposure2012="+0.35" …>`
+* **elementos** (como os seus arquivos): `<crs:Exposure2012>0.35</crs:Exposure2012>`, números **sem sinal**.
+Usando `--template` (ou `style.template`) o gerador adota a forma do template. `Look`, `Crop*`, `GrayMixer*` etc. do template são preservados;
+`Temperature`/`Tint` do template **nunca** são herdados.
 
 ## Estrutura
 ```xml

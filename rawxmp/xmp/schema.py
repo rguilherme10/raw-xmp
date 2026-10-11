@@ -105,16 +105,34 @@ _SPECS: list[ParamSpec] = [
     _s("HasSettings", "bool"),
     _s("AlreadyApplied", "bool"),
     _s("RawFileName", "str"),
+    # fields seen in real Lightroom/Bridge sidecars (kept so templates validate cleanly)
+    _s("HasCrop", "bool"), _s("CropTop", "f", 0, 1), _s("CropLeft", "f", 0, 1), _s("CropBottom", "f", 0, 1),
+    _s("CropRight", "f", 0, 1), _s("CropAngle", "f", -45, 45), _s("CropConstrainToWarp", "int", 0, 1),
+    _s("ToneCurveName", "str"), _s("CameraProfileDigest", "str"), _s("about", "str"),
+    _s("OverrideLookVignette", "bool"), _s("VignetteAmount", "sint", -100, 100), _s("VignetteMidpoint", "int", 0, 100),
+    _s("GrainAmount", "int", 0, 100), _s("GrainSize", "int", 0, 100), _s("GrainFrequency", "int", 0, 100),
+    _s("LensManualDistortionAmount", "sint", -100, 100),
+    _s("PerspectiveVertical", "sint", -100, 100), _s("PerspectiveHorizontal", "sint", -100, 100),
+    _s("PerspectiveRotate", "f", -10, 10), _s("PerspectiveScale", "int", 50, 150), _s("PerspectiveAspect", "sint", -100, 100),
+    _s("PerspectiveX", "f"), _s("PerspectiveY", "f"),
+    _s("DefringePurpleAmount", "int", 0, 20), _s("DefringePurpleHueLo", "int", 0, 100), _s("DefringePurpleHueHi", "int", 0, 100),
+    _s("DefringeGreenAmount", "int", 0, 20), _s("DefringeGreenHueLo", "int", 0, 100), _s("DefringeGreenHueHi", "int", 0, 100),
 ]
 for _c in COLORS:
-    _SPECS += [_s(f"HueAdjustment{_c}", "sint", -100, 100),
+    _SPECS += [_s(f"GrayMixer{_c}", "sint", -100, 100),
+               _s(f"HueAdjustment{_c}", "sint", -100, 100),
                _s(f"SaturationAdjustment{_c}", "sint", -100, 100),
                _s(f"LuminanceAdjustment{_c}", "sint", -100, 100)]
 
 SPECS: dict[str, ParamSpec] = {s.name: s for s in _SPECS}
 ORDER: list[str] = [s.name for s in _SPECS]
 
-CURVES = ("ToneCurve", "ToneCurvePV2012", "ToneCurvePV2012Red", "ToneCurvePV2012Green", "ToneCurvePV2012Blue")
+CURVES = ("ToneCurve", "ToneCurveRed", "ToneCurveGreen", "ToneCurveBlue",
+          "ToneCurvePV2012", "ToneCurvePV2012Red", "ToneCurvePV2012Green", "ToneCurvePV2012Blue")
+
+
+# Per-image values that must never leak from a template into another photo's sidecar
+PER_IMAGE = ("Temperature", "Tint")
 
 
 def format_value(spec: ParamSpec, v) -> str:
@@ -134,6 +152,8 @@ def format_value(spec: ParamSpec, v) -> str:
         return f"{x:+.2f}" if abs(x) >= 0.005 else "0.00"
     if f == "sf1":
         return f"{x:+.1f}"
+    if f == "f":
+        return f"{x:g}"
     raise ValueError(f"unknown format {f}")
 
 

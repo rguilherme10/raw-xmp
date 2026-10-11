@@ -57,7 +57,10 @@ def parse_xmp(source: str | Path) -> XMPModel:
             model.other_attrs[f"{prefix}:{local}"] = val
     for child in desc:
         prefix, local = pname(child.tag)
-        if child.tag == f"{{{CRS_NS}}}{local}" and local in CURVES:
+        if child.tag == f"{{{CRS_NS}}}{local}" and local not in CURVES and len(child) == 0:
+            model.attrs[local] = (child.text or "").strip()      # scalar written as an element
+            model.form = "elements"
+        elif child.tag == f"{{{CRS_NS}}}{local}" and local in CURVES:
             pts = []
             for li in child.iter(f"{{{NS['rdf']}}}li"):
                 try:

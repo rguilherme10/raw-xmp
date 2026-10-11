@@ -24,8 +24,12 @@ def to_element(model: XMPModel) -> ET.Element:
     for key, val in model.other_attrs.items():
         prefix, local = key.split(":", 1)
         desc.set(_q(prefix, local, ns), val)
+    as_elements = model.form == "elements"
     for name, val in model.ordered_attrs():
-        desc.set(_q("crs", name, ns), val)
+        if as_elements:
+            ET.SubElement(desc, _q("crs", name, ns)).text = val[1:] if val[:1] == "+" and val[1:2].isdigit() else val   # Lightroom's element form is unsigned
+        else:
+            desc.set(_q("crs", name, ns), val)
     for cname in CURVES:
         pts = model.curves.get(cname)
         if pts is None:

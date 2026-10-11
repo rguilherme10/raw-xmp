@@ -131,7 +131,11 @@ def run_batch(opts: Options) -> list[FileResult]:
     out_dir = Path(opts.output_dir) if opts.output_dir else None
     xmp_ext = cfg.get("files.xmp_extension", ".xmp")
     writing = opts.write_xmp and not opts.dry_run
-    template = parse_xmp(opts.template) if opts.template else None
+    tpl_path = opts.template or cfg.get("style.template")
+    if tpl_path and not Path(tpl_path).is_absolute() and not opts.template:
+        from ..config import ROOT
+        tpl_path = ROOT / tpl_path
+    template = parse_xmp(tpl_path) if tpl_path else None
     results: dict[str, FileResult] = {}
 
     todo: list[Path] = []

@@ -10,6 +10,9 @@
 | `validate XMP\|PASTA` | valida XMPs (`--reference`, `--no-limits`) |
 | `compare RAW` | PNG antes/depois + histogramas (`--xmp` para usar um XMP seu) |
 | `calibrate PASTA` | compara com XMPs humanos (pares `NOME.CR2` + `NOME.xmp`) |
+| `make-style XMP...` | **cria um estilo** a partir de XMPs seus (`--name`, `--with-template`, `--force`) |
+| `skin-debug RAW` | diagnostica a detecção de pele (critérios + PNG) |
+| `diagnose RAW` | matriz/WB lidos pelo LibRaw e como foram interpretados |
 | `styles` | lista estilos |
 
 ## Opções de `analyze`/`process`
@@ -53,3 +56,15 @@
 python main.py process "D:\ENSAIOS" --recursive --style portrait --workers 4 --log-file ensaio.log
 if ($LASTEXITCODE -ne 0) { Write-Warning "houve erros — veja ensaio.log" }
 ```
+
+## Criar um estilo a partir dos seus XMPs
+```powershell
+python main.py make-style D:\ref\a.xmp D:\ref\b.xmp D:\ref\c.xmp --name meu_estilo --with-template
+python main.py process D:\ENSAIO --style meu_estilo --dry-run     # confira
+python main.py process D:\ENSAIO --style meu_estilo
+```
+* Use **vários** XMPs do mesmo "look": o estilo usa a **mediana** e o comando avisa quando um slider varia muito entre eles.
+* **Exposição, Temperature e Tint nunca são copiados** (são calculados por foto).
+* Contraste/Realces/Sombras/Brancos/Pretos viram `*_bias`: o valor final é *o que o algoritmo mede na foto + seu nível habitual*.
+* `--with-template` copia o 1º XMP para `profiles/templates/NOME.xmp` e o usa como estrutura: preserva `Look`, crop e o formato de elementos; `Temperature/Tint` não são herdados.
+* O arquivo gerado (`profiles/styles/meu_estilo.yaml`) é texto: edite à vontade.

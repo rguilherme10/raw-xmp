@@ -21,6 +21,7 @@ class XMPModel:
     other_attrs: "OrderedDict[str, str]" = field(default_factory=OrderedDict)  # "prefix:name" non-crs attributes
     extra_xml: list[str] = field(default_factory=list)                        # unknown child elements (raw)
     xmptk: str = "Adobe XMP Core 7.0-c000"
+    form: str = "attributes"                      # "attributes" (<Description crs:X="1">) | "elements" (<crs:X>1</crs:X>)
 
     # ---- mutation ----------------------------------------------------------------------
     def set(self, name: str, value) -> None:
@@ -61,4 +62,4 @@ class XMPModel:
 
     def copy(self) -> "XMPModel":
         return XMPModel(OrderedDict(self.attrs), OrderedDict((k, list(v)) for k, v in self.curves.items()),
-                        dict(self.namespaces), OrderedDict(self.other_attrs), list(self.extra_xml), self.xmptk)
+                        dict(self.namespaces), OrderedDict(self.other_attrs), list(self.extra_xml), self.xmptk, self.form)
