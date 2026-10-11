@@ -65,8 +65,12 @@ def _log_lines(dec: Decision) -> list[tuple[str, str]]:
          ("INFO", f"ISO: {i.iso if i.iso else 'n/d'}"),
          ("INFO", f"Exposure calculada: {_fmt_signed(P['Exposure2012'], 2)} "
                   f"(confiança {dec.estimates['exposure'].confidence:.2f})"),
+         ("INFO", f"  Motivo: {dec.estimates['exposure'].reason}"),
+         ("INFO", f"  Cena: {dec.stats.key} | Y p50={dec.stats.pct_y['p50']:.3f} p99={dec.stats.pct_y['p99']:.3f} "
+                  f"p99.9={dec.stats.pct_y['p99.9']:.3f} | cortado {dec.stats.near_white_fraction * 100:.2f}%"),
          ("INFO", f"Temperature: {round(dec.wb.temperature.value)} ({dec.wb.mode}) | Tint: {_fmt_signed(dec.wb.tint.value)}"),
          ("INFO", f"Skin detected: {str(dec.skin.detected).lower()}")]
+    L.append(("INFO", f"  Pele: {dec.skin.reason}"))
     if dec.skin.detected:
         L.append(("INFO", f"Skin confidence: {dec.skin.confidence:.2f}"))
     for w in i.warnings:
