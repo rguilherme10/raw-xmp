@@ -1,5 +1,9 @@
 """Entry point:  python main.py <command> ...   (see docs/CLI.md)."""
+import os
 import sys
+
+for _v in ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):   # before numpy is imported (also by spawned workers)
+    os.environ.setdefault(_v, "1")
 
 try:
     from rawxmp.cli.main import main

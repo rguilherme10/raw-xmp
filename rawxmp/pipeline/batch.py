@@ -8,6 +8,7 @@ import time
 import traceback
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -149,7 +150,7 @@ def run_batch(opts: Options) -> list[FileResult]:
     LOGGER.info(f"{len(files)} RAW(s) encontrados; {len(todo)} a analisar" +
                 (" [dry-run]" if opts.dry_run else ""))
 
-    workers = opts.workers or max(1, min(os.cpu_count() or 1, 8))
+    workers = opts.workers or max(1, min((os.cpu_count() or 1) // 2 or 1, 4))   # RAW decoding is memory-hungry
     packets: list[dict] = []
     t0 = time.perf_counter()
     if workers == 1 or len(todo) <= 1:
@@ -159,14 +160,28 @@ def run_batch(opts: Options) -> list[FileResult]:
             packets.append(pk)
     else:
         # 'spawn': LibRaw/OpenMP can deadlock after fork(); spawn is also the Windows default
-        with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as ex:
-            futs = {ex.submit(analyze_worker, str(f), opts.style, opts.config_path, opts.cache_dir): f for f in todo}
-            for fut in as_completed(futs):
-                try:
-                    pk = fut.result()
-                except Exception as exc:  # worker crash (e.g. LibRaw segfault → BrokenProcessPool)
-                    pk = {"status": "error", "path": str(futs[fut]),
-                          "lines": [("ERROR", f"Não foi possível interpretar {futs[fut].name}: processo falhou: {exc}")]}
+        done: set[str] = set()
+        try:
+            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as ex:
+                futs = {ex.submit(analyze_worker, str(f), opts.style, opts.config_path, opts.cache_dir): f for f in todo}
+                for fut in as_completed(futs):
+                    try:
+                        pk = fut.result()
+                    except BrokenProcessPool:
+                        raise
+                    except Exception as exc:  # noqa: BLE001
+                        pk = {"status": "error", "path": str(futs[fut]),
+                              "lines": [("ERROR", f"Não foi possível interpretar {futs[fut].name}: {exc}")]}
+                    done.add(pk["path"])
+                    _emit(pk)
+                    packets.append(pk)
+        except BrokenProcessPool:
+            # a worker died (typically out of memory): finish what is left one file at a time, in this process
+            left = [f for f in todo if str(f) not in done]
+            LOGGER.warning(f"Um processo paralelo falhou (provável falta de memória). "
+                           f"Continuando em modo serial: {len(left)} arquivo(s). Dica: use --workers 1 ou 2.")
+            for f in left:
+                pk = analyze_worker(str(f), opts.style, opts.config_path, opts.cache_dir)
                 _emit(pk)
                 packets.append(pk)
     packets.sort(key=lambda p: p["path"])

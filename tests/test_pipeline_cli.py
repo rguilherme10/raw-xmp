@@ -199,3 +199,18 @@ def test_log_format(work_dir, capsys):
     for needle in ("[INFO] Processando IMG_0001_normal.CR2", "[INFO] ISO: 200", "[INFO] Exposure calculada:",
                    "[INFO] Skin detected:", "[INFO] XMP criado", "[INFO] Concluído"):
         assert needle in out, needle
+
+
+def test_dead_worker_falls_back_to_serial(work_dir, monkeypatch):
+    """A worker killed by out-of-memory must not abort the batch."""
+    from concurrent.futures.process import BrokenProcessPool
+    import rawxmp.pipeline.batch as B
+
+    class Boom:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): raise BrokenProcessPool("simulated OOM")
+        def __exit__(self, *a): return False
+
+    monkeypatch.setattr(B, "ProcessPoolExecutor", Boom)
+    res = run_batch(opts(work_dir, workers=2))
+    assert len(res) == 9 and all(r.status == "written" for r in res)
