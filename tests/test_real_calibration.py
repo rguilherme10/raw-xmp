@@ -14,8 +14,12 @@ pytestmark = pytest.mark.skipif(not PAIRS, reason="exemplo-para-calibrar/ not pr
 
 @pytest.fixture(scope="module")
 def results():
+    """Only per-photo edits: pairs sharing one Exposure value (>= 3 photos) are a pasted preset and are not ground truth."""
+    from collections import Counter
     cfg = load_config()
-    return [(analyze_raw(p, cfg), parse_xmp(p.with_suffix(".xmp"))) for p in PAIRS]
+    humans = {p: parse_xmp(p.with_suffix(".xmp")) for p in PAIRS}
+    counts = Counter(h.get_float("Exposure2012") for h in humans.values())
+    return [(analyze_raw(p, cfg), h) for p, h in humans.items() if counts[h.get_float("Exposure2012")] < 3]
 
 
 def test_exposure_tracks_human_edits_within_a_third_of_a_stop(results):

@@ -115,7 +115,9 @@ def cmd_calibrate(a) -> int:
     s = calibrate(a.path, cfg, a.recursive, a.out)
     LOGGER.info(f"{s['n_pairs']} par(es) CR2+XMP comparados")
     for k, v in s["parameters"].items():
-        print(f"  {k:<34} n={v['n']:<4} viés {v['bias']:+8.3f}  MAE {v['mae']:7.3f}  RMSE {v['rmse']:7.3f}  corr {v['corr']}")
+        print(f"  {k:<34} n={v['n']:<3}/{v['n_total']:<3} viés {v['bias']:+8.3f}  MAE {v['mae']:7.3f}  RMSE {v['rmse']:7.3f}  corr {v['corr']}" + ("  [preset]" if v.get("synced_preset") else ""))
+    for w in s.get("warnings", []):
+        LOGGER.warning(w)
     if s["suggestions"]:
         print("Sugestões:", json.dumps(s["suggestions"], ensure_ascii=False))
     LOGGER.info(f"Detalhes em {s['output_dir']}")

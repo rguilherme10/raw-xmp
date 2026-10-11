@@ -57,3 +57,17 @@ def test_simulation_responds_to_parameters():
 def test_compare_png_created(raw_set, tmp_path):
     out = make_comparison(raw_set["underexposed"], tmp_path / "c.png", load_config("portrait"))
     assert out.exists() and out.stat().st_size > 5000
+
+
+def test_synced_preset_is_detected_and_not_used_for_calibration(work_dir, tmp_path):
+    import re
+    cfg = load_config()
+    run_batch(Options(path=str(work_dir), workers=1, write_reports=False))
+    for x in work_dir.glob("*.xmp"):                       # every photo gets the SAME exposure (copy/paste settings)
+        t = x.read_text(encoding="utf-8")
+        t = re.sub(r'crs:Exposure2012="[^"]+"', 'crs:Exposure2012="+1.31"', t)
+        x.write_text(t, encoding="utf-8")
+    s = calibrate(work_dir, cfg, out_dir=tmp_path / "cal")
+    assert s["parameters"]["Exposure2012"]["synced_preset"] is True
+    assert any("Exposure2012" in w and "preset" in w for w in s["warnings"])
+    assert "exposure.target_median" not in s["suggestions"]

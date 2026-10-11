@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+from collections import Counter
 from pathlib import Path
 
 from ..config import Config
@@ -67,21 +68,47 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
                  if r.get(f"{k}_algo") is not None and r.get(f"{k}_human") is not None]
         if not pairs:
             continue
-        errs = [a - h for a, h in pairs]
-        n = len(errs)
-        bias = sum(errs) / n
-        mae = sum(abs(e) for e in errs) / n
-        rmse = math.sqrt(sum(e * e for e in errs) / n)
-        summary["parameters"][k] = {"n": n, "bias": round(bias, 3), "mae": round(mae, 3), "rmse": round(rmse, 3),
-                                    "corr": _corr([a for a, _ in pairs], [h for _, h in pairs])}
+        # A value shared by >= 3 photos and >= 40 % of the set is a pasted preset, not a per-photo decision: drop those samples.
+        counts = Counter(round(h, 3) for _, h in pairs)
+        mode, mode_n = counts.most_common(1)[0]
+        n_all = len(pairs)
+        preset_rows = mode_n >= 3 and mode_n / n_all >= 0.4
+        if preset_rows:
+            pairs = [(a, h) for a, h in pairs if round(h, 3) != mode]
+        entry = {"n": len(pairs), "n_total": n_all, "excluded_as_preset": (mode_n if preset_rows else 0),
+                 "preset_value": mode if preset_rows else None,
+                 "human_distinct_values": len({round(h, 3) for _, h in pairs}),
+                 "synced_preset": bool(n_all >= 4 and (len(counts) == 1))}
+        if pairs:
+            errs = [a - h for a, h in pairs]
+            n = len(errs)
+            entry.update(bias=round(sum(errs) / n, 3), mae=round(sum(abs(e) for e in errs) / n, 3),
+                         rmse=round(math.sqrt(sum(e * e for e in errs) / n), 3),
+                         corr=_corr([a for a, _ in pairs], [h for _, h in pairs]))
+        else:
+            entry.update(bias=0.0, mae=0.0, rmse=0.0, corr=None)
+        summary["parameters"][k] = entry
+
+    summary["warnings"] = []
+    for k in COMPARE:
+        e = summary["parameters"].get(k)
+        if e and e["excluded_as_preset"]:
+            summary["warnings"].append(
+                f"{k}: o valor {e['preset_value']:g} se repete em {e['excluded_as_preset']} de {e['n_total']} fotos — "
+                "parece preset sincronizado (copiar/colar); essas amostras foram EXCLUÍDAS da calibração "
+                f"(restam {e['n']})")
     ex = summary["parameters"].get("Exposure2012")
-    if ex and ex["n"] >= 5:
+    if ex and ex["n"] == 0:
+        summary["suggestions"]["note"] = ("Exposição idêntica em todas as fotos: sem informação para calibrar. "
+                                          "Use pares em que a exposição foi ajustada foto a foto.")
+    elif ex and (ex["human_distinct_values"] < 3 or ex["n"] < 5):
+        summary["suggestions"]["note"] = (f"Só {ex['n']} amostra(s) de exposição individual ({ex['human_distinct_values']} valores "
+                                          "distintos): precisa de ≥ 5 pares editados foto a foto para sugerir um novo alvo.")
+    elif ex:
         t = cfg.get("exposure.target_median")
         summary["suggestions"]["exposure.target_median"] = round(t * 2 ** (-ex["bias"]), 4)
         summary["suggestions"]["note"] = ("O viés de exposição é absorvido em exposure.target_median "
                                           "(preferencialmente por câmera em profiles/cameras/*.yaml).")
-    elif ex:
-        summary["suggestions"]["note"] = "Menos de 5 pares: viés de exposição ainda não é confiável."
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / "calibration_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -96,6 +123,11 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
             w.writerows(feats)
     summary["output_dir"] = str(out)
     return summary
+
+
+def _const(rows, k):
+    vals = {r.get(f"{k}_human") for r in rows if r.get(f"{k}_human") is not None}
+    return next(iter(vals)) if len(vals) == 1 else "?"
 
 
 def _corr(a, b):
