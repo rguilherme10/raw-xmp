@@ -34,7 +34,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         parts.append(f"pele Y={skin.median_y:.3f} sugere {d_skin:+.2f} EV (peso {w:.2f})")
 
     # --- 3. scene key damping (not applied when a person is the subject: dark skin is not "creative low-key") ------------------------------------------------------------
-    damp = ex["damping"]["normal"] if skin_led else ex["damping"].get(stats.key, ex["damping"]["normal"])
+    damp = ex["skin_led_damping"] if skin_led else ex["damping"].get(stats.key, ex["damping"]["normal"])
     delta *= damp
     if stats.key != "normal" and not skin_led:
         parts.append(f"cena {stats.key} → correção atenuada ×{damp:.2f}")
@@ -47,7 +47,12 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     # Judged on p99 (the bright subject), not p99.9: tiny specular lights may clip and be pulled back with
     # Highlights (measured on the user's own edits: +2.2 EV with p99.9 at 0.77).
     allowed_up = float(np.log2(ex["highlight_ceiling"] / p99))
-    if stats.sensor_clip_fraction > 0.002 or stats.near_white_fraction > 0.01:
+    if skin_led:
+        # A person is the subject: expose for the skin and let a bright background clip (Highlights pulls it back).
+        # Measured on 10 human edits: p99 of 0.93-0.98 and still +0.6..+1.3 EV.  Guard = the frame's median only.
+        allowed_up = float(np.log2(ex["skin_led_median_ceiling"] / p50))
+        parts.append("assunto = pessoa: exposição pela pele, fundo claro pode estourar (Realces recupera)")
+    elif stats.sensor_clip_fraction > 0.002 or stats.near_white_fraction > 0.01:
         allowed_up = min(allowed_up, 0.0)
         parts.append("highlights já cortados: sem aumento de exposição")
     allowed_up = max(allowed_up, 0.0)

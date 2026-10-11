@@ -49,8 +49,10 @@ exposure:
   low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional
   high_key: {p5_min: 0.12, p50_min: 0.35}
   high_contrast_stops: 10.5         # log2(p99/p1) above which scene counts as high-contrast
-  skin_target_y: 0.115              # desired skin luminance (linear Y). Measured on 4 human edits: 0.095–0.136 (mean 0.117)
+  skin_target_y: 0.12               # desired skin luminance (linear Y). Measured on 10 human edits: median 0.12 (0.095–0.161, one outlier 0.25)
   skin_weight: 0.9                  # max weight of the skin-based exposure estimate (people are the subject)
+  skin_led_damping: 1.0             # no attenuation when skin drives the exposure (human/predicted ratio ≈ 1.0)
+  skin_led_median_ceiling: 0.45     # when skin-led, brightening may take the frame's median up to this, no further
   skin_full_confidence: 0.6         # skin confidence at which that max weight is reached
   highlights:
     knee: 0.85                      # post-exposure p99 above this starts pulling highlights

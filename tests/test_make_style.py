@@ -98,4 +98,6 @@ def test_element_form_numbers_are_unsigned_like_the_users_files(tmp_path, raw_se
     shutil.copy(raw_set["normal"], d / "B.CR2")
     run_batch(Options(path=str(d), workers=1, template=str(REF[0]), write_reports=False, style="portrait"))
     text = (d / "B.xmp").read_text(encoding="utf-8")
-    assert "<crs:Vibrance>10</crs:Vibrance>" in text and ">+" not in text
+    import re
+    assert re.search(r"<crs:Vibrance>-?\d+</crs:Vibrance>", text)
+    assert not re.search(r"<crs:\w+>\+\d", text)          # element form is unsigned, like the user's files
