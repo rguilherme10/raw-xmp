@@ -17,7 +17,7 @@
    xmp:ModifyDate="2026-10-10T19:10:13.28"
    xmp:CreateDate="2026-10-10T19:10:13.28"
    xmp:Rating="3"
-   xmp:MetadataDate="2026-10-11T10:48:06-04:00"
+   xmp:MetadataDate="2026-10-11T14:22:56-04:00"
    tiff:Make="Canon"
    tiff:Model="Canon EOS Rebel T6i"
    tiff:Orientation="1"
@@ -61,10 +61,12 @@
    photoshop:EmbeddedXMPDigest="AD0ACF660F79AC49FD004B2DD3BC0461"
    xmpMM:DocumentID="29693FF4E4429A157673D4BD07615B57"
    xmpMM:OriginalDocumentID="29693FF4E4429A157673D4BD07615B57"
-   xmpMM:InstanceID="xmp.iid:fb1eb08b-8806-ce49-88e8-49c4674091db"
+   xmpMM:InstanceID="xmp.iid:a39d03e3-97f7-804f-aa9d-cdbf6f6e44ca"
+   xmpMM:PreservedFileName="IMG_3772.CR2"
    crd:CameraProfile="Camera Standard"
    crd:LookName=""
-   xmpDM:good="True"
+   xmpDM:good="true"
+   xmpDM:pick="1"
    crs:Version="18.7"
    crs:ProcessVersion="15.4"
    crs:WhiteBalance="Custom"
@@ -179,8 +181,8 @@
    crs:LensProfileDistortionScale="100"
    crs:LensProfileVignettingScale="100"
    crs:HasSettings="True"
-   crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   crs:RawFileName="IMG_3772.CR2">
    <exif:ISOSpeedRatings>
     <rdf:Seq>
      <rdf:li>800</rdf:li>
@@ -204,6 +206,12 @@
       stEvt:instanceID="xmp.iid:fb1eb08b-8806-ce49-88e8-49c4674091db"
       stEvt:when="2026-10-11T10:48:06-04:00"
       stEvt:softwareAgent="Adobe Lightroom 9.6 (Windows)"
+      stEvt:changed="/metadata"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:a39d03e3-97f7-804f-aa9d-cdbf6f6e44ca"
+      stEvt:when="2026-10-11T14:22:56-04:00"
+      stEvt:softwareAgent="Adobe Photoshop Lightroom Classic 15.6 (Windows)"
       stEvt:changed="/metadata"/>
     </rdf:Seq>
    </xmpMM:History>

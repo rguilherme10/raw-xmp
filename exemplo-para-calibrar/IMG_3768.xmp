@@ -17,7 +17,7 @@
    xmp:ModifyDate="2026-10-10T19:01:20.00"
    xmp:CreateDate="2026-10-10T19:01:20.00"
    xmp:Rating="3"
-   xmp:MetadataDate="2026-10-11T11:04:47-04:00"
+   xmp:MetadataDate="2026-10-11T14:22:56-04:00"
    tiff:Make="Canon"
    tiff:Model="Canon EOS Rebel T6i"
    tiff:Orientation="1"
@@ -61,10 +61,12 @@
    photoshop:EmbeddedXMPDigest="AD0ACF660F79AC49FD004B2DD3BC0461"
    xmpMM:DocumentID="1244F1C2A6255DDE858F9DAE5F4D7409"
    xmpMM:OriginalDocumentID="1244F1C2A6255DDE858F9DAE5F4D7409"
-   xmpMM:InstanceID="xmp.iid:861bcdcf-44d4-5743-aa15-8de04296e068"
+   xmpMM:InstanceID="xmp.iid:244d8d4d-ba47-aa44-baf0-570c1369f463"
+   xmpMM:PreservedFileName="IMG_3768.CR2"
    crd:CameraProfile="Camera Standard"
    crd:LookName=""
-   xmpDM:good="True"
+   xmpDM:good="true"
+   xmpDM:pick="1"
    crs:Version="18.7"
    crs:CompatibleVersion="285212672"
    crs:ProcessVersion="15.4"
@@ -178,8 +180,8 @@
    crs:Table_54F668AB90F3BBBB84B2FB4324F837D3="n5000pY/cqgVcVfV.v5/PunbM/[|BPG0hk.z/`Hxn[v)B9315LYq{3]$n{Gn+9b+'iw@S{:gvT7|SjLBzlNSHkE)S6jl9Z86YnRP8gRVKHn'%0[CEbj7H2/59MHsIQGLr:4AyA-xf'T+YMD6.+SGn]@Ek@2F020O4o9au$6)D?LjOeBYa%S{Gz4B-rZ!SsL.1]q3=o9e)mrP4R(lEm)j{zT8@Ta?%dv?5ibTG=Ym|*P)E5qgGkIDh69G#dWZfmd#GC+jRIIdt(4uh3vKrZLKn$=hft/|-`f62?lS1(GR(hw}6cGB'q6zu*ff!7NpRb9kMGBDqufUJ[!uQrZE4)FFbsKQ9/tKbXaO/a.70*$:S?Bng7@|xTyJ2"
    crs:AllowFilters="1"
    crs:HasSettings="True"
-   crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   crs:RawFileName="IMG_3768.CR2">
    <exif:ISOSpeedRatings>
     <rdf:Seq>
      <rdf:li>800</rdf:li>
@@ -203,6 +205,12 @@
       stEvt:instanceID="xmp.iid:861bcdcf-44d4-5743-aa15-8de04296e068"
       stEvt:when="2026-10-11T11:04:47-04:00"
       stEvt:softwareAgent="Adobe Lightroom 9.6 (Windows)"
+      stEvt:changed="/metadata"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:244d8d4d-ba47-aa44-baf0-570c1369f463"
+      stEvt:when="2026-10-11T14:22:56-04:00"
+      stEvt:softwareAgent="Adobe Photoshop Lightroom Classic 15.6 (Windows)"
       stEvt:changed="/metadata"/>
     </rdf:Seq>
    </xmpMM:History>
