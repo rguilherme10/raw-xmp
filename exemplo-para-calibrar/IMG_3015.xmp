@@ -11,11 +11,12 @@
     xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
     xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"
     xmlns:crd="http://ns.adobe.com/camera-raw-defaults/1.0/"
+    xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/"
     xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
    xmp:CreatorTool="rawxmp 0.1.0"
    xmp:ModifyDate="2026-10-10T16:02:52.52"
    xmp:CreateDate="2026-10-10T16:02:52.52"
-   xmp:MetadataDate="2026-10-11T12:18:10-04:00"
+   xmp:MetadataDate="2026-10-11T14:22:29-04:00"
    tiff:Make="Canon"
    tiff:Model="Canon EOS Rebel T6i"
    tiff:Orientation="1"
@@ -59,19 +60,21 @@
    photoshop:EmbeddedXMPDigest="AD0ACF660F79AC49FD004B2DD3BC0461"
    xmpMM:DocumentID="F1D1AA81A1ED3AF66656AC2A42592D37"
    xmpMM:OriginalDocumentID="F1D1AA81A1ED3AF66656AC2A42592D37"
-   xmpMM:InstanceID="xmp.iid:f7503f6a-34b6-4b48-bbf9-5936f26ce4f4"
+   xmpMM:InstanceID="xmp.iid:c9250ec6-178f-6147-a0e7-30e5a204572d"
+   xmpMM:PreservedFileName="IMG_3015.CR2"
    crd:CameraProfile="Camera Standard"
    crd:LookName=""
+   xmpDM:pick="0"
    crs:Version="18.7"
    crs:ProcessVersion="15.4"
    crs:WhiteBalance="Custom"
    crs:Temperature="4105"
    crs:Tint="-3"
    crs:Exposure2012="+1.31"
-   crs:Contrast2012="0"
-   crs:Highlights2012="-54"
+   crs:Contrast2012="+13"
+   crs:Highlights2012="-88"
    crs:Shadows2012="+58"
-   crs:Whites2012="0"
+   crs:Whites2012="-49"
    crs:Blacks2012="-18"
    crs:Texture="0"
    crs:Clarity2012="+2"
@@ -103,8 +106,8 @@
    crs:HueAdjustmentBlue="0"
    crs:HueAdjustmentPurple="0"
    crs:HueAdjustmentMagenta="0"
-   crs:SaturationAdjustmentRed="-3"
-   crs:SaturationAdjustmentOrange="-8"
+   crs:SaturationAdjustmentRed="-13"
+   crs:SaturationAdjustmentOrange="-16"
    crs:SaturationAdjustmentYellow="-13"
    crs:SaturationAdjustmentGreen="-20"
    crs:SaturationAdjustmentAqua="0"
@@ -176,8 +179,8 @@
    crs:LensProfileDistortionScale="100"
    crs:LensProfileVignettingScale="100"
    crs:HasSettings="True"
-   crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   crs:RawFileName="IMG_3015.CR2">
    <exif:ISOSpeedRatings>
     <rdf:Seq>
      <rdf:li>400</rdf:li>
@@ -201,6 +204,12 @@
       stEvt:instanceID="xmp.iid:f7503f6a-34b6-4b48-bbf9-5936f26ce4f4"
       stEvt:when="2026-10-11T12:18:10-04:00"
       stEvt:softwareAgent="Adobe Lightroom 9.6 (Windows)"
+      stEvt:changed="/metadata"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:c9250ec6-178f-6147-a0e7-30e5a204572d"
+      stEvt:when="2026-10-11T14:22:29-04:00"
+      stEvt:softwareAgent="Adobe Photoshop Lightroom Classic 15.6 (Windows)"
       stEvt:changed="/metadata"/>
     </rdf:Seq>
    </xmpMM:History>

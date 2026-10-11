@@ -11,11 +11,12 @@
     xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
     xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"
     xmlns:crd="http://ns.adobe.com/camera-raw-defaults/1.0/"
+    xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/"
     xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
    xmp:CreatorTool="rawxmp 0.1.0"
    xmp:ModifyDate="2026-10-10T16:03:15.00"
    xmp:CreateDate="2026-10-10T16:03:15.00"
-   xmp:MetadataDate="2026-10-11T12:18:09-04:00"
+   xmp:MetadataDate="2026-10-11T14:22:29-04:00"
    tiff:Make="Canon"
    tiff:Model="Canon EOS Rebel T6i"
    tiff:Orientation="1"
@@ -59,17 +60,19 @@
    photoshop:EmbeddedXMPDigest="AD0ACF660F79AC49FD004B2DD3BC0461"
    xmpMM:DocumentID="77A83DD1FA0E6A3CE7B1D01ECD8E3C3A"
    xmpMM:OriginalDocumentID="77A83DD1FA0E6A3CE7B1D01ECD8E3C3A"
-   xmpMM:InstanceID="xmp.iid:86e23dc5-b698-6943-a9ed-4e0bc1f2d46e"
+   xmpMM:InstanceID="xmp.iid:ae4a0883-2bef-3a4b-b9de-1bb7dc312de2"
+   xmpMM:PreservedFileName="IMG_3022.CR2"
    crd:CameraProfile="Camera Standard"
    crd:LookName=""
+   xmpDM:pick="0"
    crs:Version="18.7"
    crs:ProcessVersion="15.4"
    crs:WhiteBalance="Custom"
    crs:Temperature="4105"
    crs:Tint="-3"
-   crs:Exposure2012="+1.31"
+   crs:Exposure2012="+1.74"
    crs:Contrast2012="0"
-   crs:Highlights2012="-54"
+   crs:Highlights2012="0"
    crs:Shadows2012="+58"
    crs:Whites2012="0"
    crs:Blacks2012="-18"
@@ -176,8 +179,8 @@
    crs:LensProfileDistortionScale="100"
    crs:LensProfileVignettingScale="100"
    crs:HasSettings="True"
-   crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   crs:RawFileName="IMG_3022.CR2">
    <exif:ISOSpeedRatings>
     <rdf:Seq>
      <rdf:li>400</rdf:li>
@@ -201,6 +204,12 @@
       stEvt:instanceID="xmp.iid:86e23dc5-b698-6943-a9ed-4e0bc1f2d46e"
       stEvt:when="2026-10-11T12:18:09-04:00"
       stEvt:softwareAgent="Adobe Lightroom 9.6 (Windows)"
+      stEvt:changed="/metadata"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:ae4a0883-2bef-3a4b-b9de-1bb7dc312de2"
+      stEvt:when="2026-10-11T14:22:29-04:00"
+      stEvt:softwareAgent="Adobe Photoshop Lightroom Classic 15.6 (Windows)"
       stEvt:changed="/metadata"/>
     </rdf:Seq>
    </xmpMM:History>

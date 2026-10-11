@@ -11,11 +11,12 @@
     xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
     xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"
     xmlns:crd="http://ns.adobe.com/camera-raw-defaults/1.0/"
+    xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/"
     xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
    xmp:CreatorTool="rawxmp 0.1.0"
    xmp:ModifyDate="2026-10-10T15:56:26.00"
    xmp:CreateDate="2026-10-10T15:56:26.00"
-   xmp:MetadataDate="2026-10-11T12:18:13-04:00"
+   xmp:MetadataDate="2026-10-11T14:22:28-04:00"
    tiff:Make="Canon"
    tiff:Model="Canon EOS Rebel T6i"
    tiff:Orientation="8"
@@ -59,25 +60,28 @@
    photoshop:EmbeddedXMPDigest="AD0ACF660F79AC49FD004B2DD3BC0461"
    xmpMM:DocumentID="2A6C4B1735002BE33CBA6F254ADFB645"
    xmpMM:OriginalDocumentID="2A6C4B1735002BE33CBA6F254ADFB645"
-   xmpMM:InstanceID="xmp.iid:800b7f7c-d138-9c47-8c92-6b9c48594c44"
+   xmpMM:InstanceID="xmp.iid:188b057e-775b-9840-9655-1dba0ba379f3"
+   xmpMM:PreservedFileName="IMG_2993.CR2"
    crd:CameraProfile="Camera Standard"
    crd:LookName=""
+   xmpDM:pick="0"
    crs:Version="18.7"
+   crs:CompatibleVersion="285212672"
    crs:ProcessVersion="15.4"
    crs:WhiteBalance="Custom"
-   crs:Temperature="4105"
+   crs:Temperature="4430"
    crs:Tint="-3"
-   crs:Exposure2012="+1.31"
+   crs:Exposure2012="+0.97"
    crs:Contrast2012="0"
-   crs:Highlights2012="-54"
+   crs:Highlights2012="-100"
    crs:Shadows2012="+58"
-   crs:Whites2012="0"
+   crs:Whites2012="-100"
    crs:Blacks2012="-18"
    crs:Texture="0"
    crs:Clarity2012="+2"
    crs:Dehaze="+9"
-   crs:Vibrance="+30"
-   crs:Saturation="0"
+   crs:Vibrance="+25"
+   crs:Saturation="-10"
    crs:ParametricShadows="0"
    crs:ParametricDarks="0"
    crs:ParametricLights="0"
@@ -89,12 +93,8 @@
    crs:SharpenRadius="+1.0"
    crs:SharpenDetail="25"
    crs:SharpenEdgeMasking="10"
-   crs:LuminanceSmoothing="9"
-   crs:LuminanceNoiseReductionDetail="50"
-   crs:LuminanceNoiseReductionContrast="0"
-   crs:ColorNoiseReduction="28"
-   crs:ColorNoiseReductionDetail="50"
-   crs:ColorNoiseReductionSmoothness="50"
+   crs:LuminanceSmoothing="0"
+   crs:ColorNoiseReduction="0"
    crs:HueAdjustmentRed="+21"
    crs:HueAdjustmentOrange="+4"
    crs:HueAdjustmentYellow="-10"
@@ -104,7 +104,7 @@
    crs:HueAdjustmentPurple="0"
    crs:HueAdjustmentMagenta="0"
    crs:SaturationAdjustmentRed="-3"
-   crs:SaturationAdjustmentOrange="-8"
+   crs:SaturationAdjustmentOrange="-16"
    crs:SaturationAdjustmentYellow="-13"
    crs:SaturationAdjustmentGreen="-20"
    crs:SaturationAdjustmentAqua="0"
@@ -175,9 +175,11 @@
    crs:LensProfileIsEmbedded="False"
    crs:LensProfileDistortionScale="100"
    crs:LensProfileVignettingScale="100"
+   crs:Table_BACB028467919733C28B990B0C544192="n5000pY/cquVcVffup(T[k}as/H+T2Yttj4-p(NGE{9TVjT]|osF/bt%r%UblZt.U[G3wO:M|ePG#z7'`-7|/`1y`goF:3ufXr8G$ROCv|ed]3z2@V@b`/Moy`c#m3O)kVyC[IqrR'ir=AdrQSzz.LrD%L6ag4+^t79$R*a{37VKHvDy%-(t6I:Or@=@hV*TGSApKx!2U(%jJfygtB{{m89ZVNNr(Uuxv:GeD*:SD|bLsTYMlJKVluiW2tRyNX^^ij=SzPFks8D`jc^HG-pa{K`S{E+`Sl7umBWxkvl-W%X}ozm1)V]bRIq.O$T.CC{}peAZWo'wIY+K0FW(*{$|vhfB(:(RtHMv}@`Ogj36gKA0c5vA/G+0"
+   crs:AllowFilters="1"
    crs:HasSettings="True"
-   crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   crs:RawFileName="IMG_2993.CR2">
    <exif:ISOSpeedRatings>
     <rdf:Seq>
      <rdf:li>100</rdf:li>
@@ -201,6 +203,12 @@
       stEvt:instanceID="xmp.iid:800b7f7c-d138-9c47-8c92-6b9c48594c44"
       stEvt:when="2026-10-11T12:18:13-04:00"
       stEvt:softwareAgent="Adobe Lightroom 9.6 (Windows)"
+      stEvt:changed="/metadata"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:188b057e-775b-9840-9655-1dba0ba379f3"
+      stEvt:when="2026-10-11T14:22:28-04:00"
+      stEvt:softwareAgent="Adobe Photoshop Lightroom Classic 15.6 (Windows)"
       stEvt:changed="/metadata"/>
     </rdf:Seq>
    </xmpMM:History>
@@ -242,6 +250,210 @@
      <rdf:li>-50.000000</rdf:li>
     </rdf:Seq>
    </crs:ColorVariance>
+   <crs:MaskGroupBasedCorrections>
+    <rdf:Seq>
+     <rdf:li>
+      <rdf:Description
+       crs:What="Correction"
+       crs:CorrectionAmount="1"
+       crs:CorrectionActive="true"
+       crs:CorrectionName="Suave"
+       crs:CorrectionSyncID="5601D9FAFB88361404A96FC371E51C68"
+       crs:LocalExposure="0"
+       crs:LocalHue="0"
+       crs:LocalSaturation="0"
+       crs:LocalContrast="0"
+       crs:LocalClarity="0"
+       crs:LocalSharpness="0"
+       crs:LocalBrightness="0"
+       crs:LocalToningHue="0"
+       crs:LocalToningSaturation="0"
+       crs:LocalExposure2012="0.0825"
+       crs:LocalContrast2012="0"
+       crs:LocalHighlights2012="0"
+       crs:LocalShadows2012="0.15"
+       crs:LocalWhites2012="0"
+       crs:LocalBlacks2012="0"
+       crs:LocalClarity2012="0"
+       crs:LocalDehaze="0"
+       crs:LocalLuminanceNoise="0"
+       crs:LocalMoire="0"
+       crs:LocalDefringe="0"
+       crs:LocalTemperature="0"
+       crs:LocalTint="0"
+       crs:LocalTexture="0"
+       crs:LocalGrain="0"
+       crs:LocalCorrectedDepth="0"
+       crs:LocalCurveRefineSaturation="100">
+      <crs:CorrectionMasks>
+       <rdf:Seq>
+        <rdf:li
+         crs:What="Mask/Image"
+         crs:MaskActive="true"
+         crs:MaskName="Assunto 1"
+         crs:MaskBlendMode="0"
+         crs:MaskInverted="false"
+         crs:MaskSyncID="09A5FD709869476988BF81CCCFB3265E"
+         crs:MaskValue="1"
+         crs:MaskVersion="1"
+         crs:MaskSubType="1"
+         crs:ReferencePoint="0.189626 0.284577"
+         crs:InputDigest="3FC9EBC67CE740FABBC82432CBB90B48"
+         crs:InputDigestVersion="2"
+         crs:LocalInputDigest="46FA6B0AA1920198DC8F5B1A0BB31995"
+         crs:LocalInputDigestVersion="1"
+         crs:MaskDigest="18A908888C524C84884E48BF985D2D59"
+         crs:WholeImageArea="0/1,0/1,1920/1,2880/1"
+         crs:Origin="0,0"
+         crs:FullMaskSize="2880,1920"
+         crs:ModelVersion="318769633"/>
+       </rdf:Seq>
+      </crs:CorrectionMasks>
+      </rdf:Description>
+     </rdf:li>
+    </rdf:Seq>
+   </crs:MaskGroupBasedCorrections>
+   <crs:FilterList rdf:parseType="Resource">
+    <crs:Filters>
+     <rdf:Seq>
+      <rdf:li>
+       <rdf:Description
+        crs:Name="Enhance"
+        crs:Title="$$$/CRaw/Filter/Title/Denoise=Denoise"
+        crs:FilterID="1"
+        crs:MinDisplayVersion="285212672"
+        crs:MinEditVersion="285212672"
+        crs:OrderIndexN="100000"
+        crs:OrderIndexD="1"
+        crs:SrcBoundsTop="0"
+        crs:SrcBoundsLeft="0"
+        crs:SrcBoundsBottom="4022"
+        crs:SrcBoundsRight="6024"
+        crs:DstBoundsTop="0"
+        crs:DstBoundsLeft="0"
+        crs:DstBoundsBottom="4022"
+        crs:DstBoundsRight="6024"
+        crs:SrcDefaultCropAreaTop="12"
+        crs:SrcDefaultCropAreaLeft="12"
+        crs:SrcDefaultCropAreaBottom="4012"
+        crs:SrcDefaultCropAreaRight="6012"
+        crs:DstDefaultCropAreaTop="12"
+        crs:DstDefaultCropAreaLeft="12"
+        crs:DstDefaultCropAreaBottom="4012"
+        crs:DstDefaultCropAreaRight="6012"
+        crs:ShouldDeleteImagesDueToUpstream="true"
+        crs:CompressedSettings="BACB028467919733C28B990B0C544192">
+       <crs:Images>
+        <rdf:Seq>
+         <rdf:li>
+          <rdf:Description
+           crs:ReferenceImageAreaTop="0"
+           crs:ReferenceImageAreaLeft="0"
+           crs:ReferenceImageAreaBottom="4022"
+           crs:ReferenceImageAreaRight="6024"
+           crs:ReferenceDefaultCropAreaTop="12"
+           crs:ReferenceDefaultCropAreaLeft="12"
+           crs:ReferenceDefaultCropAreaBottom="4012"
+           crs:ReferenceDefaultCropAreaRight="6012"
+           crs:BlendType="1"
+           crs:BlendWhiteBalanceMode="2"
+           crs:MatrixTypeA="1"
+           crs:MatrixTypeB="1"
+           crs:MatrixTypeC="4"
+           crs:Opacity="1,1"
+           crs:GlobalInputDigest="B2C97AE425DD751B0E48A3ACAE79CF4A">
+          <crs:BlendParams>
+           <rdf:Seq>
+            <rdf:li>751619277/1073741824</rdf:li>
+            <rdf:li>805306368/1073741824</rdf:li>
+            <rdf:li>32768/32768</rdf:li>
+            <rdf:li>32768/32768</rdf:li>
+           </rdf:Seq>
+          </crs:BlendParams>
+          <crs:MatrixParamsA>
+           <rdf:Seq>
+            <rdf:li>25/100</rdf:li>
+            <rdf:li>25/100</rdf:li>
+           </rdf:Seq>
+          </crs:MatrixParamsA>
+          <crs:MatrixParamsB>
+           <rdf:Seq>
+            <rdf:li>25/100</rdf:li>
+            <rdf:li>25/100</rdf:li>
+           </rdf:Seq>
+          </crs:MatrixParamsB>
+          <crs:ColorVariations>
+           <rdf:Seq>
+            <rdf:li rdf:parseType="Resource">
+             <crs:Linearization>
+              <rdf:Seq>
+               <rdf:li rdf:parseType="Resource">
+                <crs:MapPolynomial>
+                 <rdf:Seq>
+                  <rdf:li>1011598/1073741824</rdf:li>
+                  <rdf:li>67045639/1073741824</rdf:li>
+                  <rdf:li>0/1</rdf:li>
+                  <rdf:li>1005684587/1073741824</rdf:li>
+                 </rdf:Seq>
+                </crs:MapPolynomial>
+               </rdf:li>
+               <rdf:li rdf:parseType="Resource">
+                <crs:MapPolynomial>
+                 <rdf:Seq>
+                  <rdf:li>2003361/1073741824</rdf:li>
+                  <rdf:li>66983654/1073741824</rdf:li>
+                  <rdf:li>0/1</rdf:li>
+                  <rdf:li>1004754809/1073741824</rdf:li>
+                 </rdf:Seq>
+                </crs:MapPolynomial>
+               </rdf:li>
+               <rdf:li rdf:parseType="Resource">
+                <crs:MapPolynomial>
+                 <rdf:Seq>
+                  <rdf:li>991763/1073741824</rdf:li>
+                  <rdf:li>67046879/1073741824</rdf:li>
+                  <rdf:li>0/1</rdf:li>
+                  <rdf:li>1005703182/1073741824</rdf:li>
+                 </rdf:Seq>
+                </crs:MapPolynomial>
+               </rdf:li>
+              </rdf:Seq>
+             </crs:Linearization>
+             <crs:BlackLevels>
+              <rdf:Seq>
+               <rdf:li
+                crs:Black="0,1"/>
+               <rdf:li
+                crs:Black="0,1"/>
+               <rdf:li
+                crs:Black="0,1"/>
+              </rdf:Seq>
+             </crs:BlackLevels>
+             <crs:ImageGroup>
+              <rdf:Seq>
+               <rdf:li
+                crs:GroupDigest="BE6D2DD5E35E217ED88D24C045A59A09"
+                crs:OriginalInstanceDigest="672EF367E89733F80345FFC6C80D3D12"
+                crs:SizeX="6024"
+                crs:SizeY="4022"
+                crs:Stage3X="6000"
+                crs:Stage3Y="4000"
+                crs:PixelType="3"
+                crs:Planes="3"/>
+              </rdf:Seq>
+             </crs:ImageGroup>
+            </rdf:li>
+           </rdf:Seq>
+          </crs:ColorVariations>
+          </rdf:Description>
+         </rdf:li>
+        </rdf:Seq>
+       </crs:Images>
+       </rdf:Description>
+      </rdf:li>
+     </rdf:Seq>
+    </crs:Filters>
+   </crs:FilterList>
   </rdf:Description>
  </rdf:RDF>
 </x:xmpmeta>
