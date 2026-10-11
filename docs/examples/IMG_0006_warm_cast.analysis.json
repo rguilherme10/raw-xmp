@@ -1,0 +1,661 @@
+{
+  "file": "IMG_0006_warm_cast.CR2",
+  "style": "portrait",
+  "camera_rule_set": "canon_generic",
+  "metadata": {
+    "path": "/tmp/claude-0/-home-user-raw-xmp/fdecfe94-b8c7-5cff-bf89-d42854bacba5/scratchpad/ex/IMG_0006_warm_cast.CR2",
+    "file_name": "IMG_0006_warm_cast.CR2",
+    "file_size": 307736,
+    "width": 480,
+    "height": 320,
+    "make": "Canon",
+    "camera": "Canon EOS SYNTH",
+    "lens": "EF50mm f/1.8 STM",
+    "iso": 200,
+    "aperture": 2.8,
+    "shutter": 0.005,
+    "focal_length": 50.0,
+    "orientation": 1,
+    "datetime": "2024:05:01 10:20:30",
+    "black_level": [
+      256,
+      256,
+      256,
+      256
+    ],
+    "white_level": 16383,
+    "camera_wb": [
+      0.9006575345993042,
+      1.0,
+      1.157273530960083
+    ],
+    "daylight_wb": [
+      1.000025093760362,
+      1.0,
+      1.0001775636867418
+    ],
+    "xyz_to_cam": [
+      [
+        1.6467278610007028,
+        -0.36590617214801546,
+        -0.18300309313421073
+      ],
+      [
+        -0.33809726633670495,
+        1.1109910478723144,
+        0.1931984431570893
+      ],
+      [
+        0.024204101975339294,
+        0.12092048691027009,
+        0.7862331496057504
+      ]
+    ],
+    "metadata_source": "tiff",
+    "raw_clip_fraction": 0.0,
+    "warnings": []
+  },
+  "exposure_analysis": {
+    "pct_y": {
+      "p0.1": 0.03568378089740872,
+      "p1": 0.03597261782735586,
+      "p5": 0.036781685799360274,
+      "p50": 0.3145766854286194,
+      "p95": 0.7101698040962218,
+      "p99": 0.7887218749523163,
+      "p99.9": 0.7909966720938683
+    },
+    "pct_v": {
+      "p0.1": 0.2080966334939003,
+      "p1": 0.20898188650608063,
+      "p5": 0.21143969595432283,
+      "p50": 0.5965861082077026,
+      "p95": 0.8597870856523513,
+      "p99": 0.900661388039589,
+      "p99.9": 0.9018089002966881
+    },
+    "mean_y": 0.3584444522857666,
+    "near_black_fraction": 0.0,
+    "near_white_fraction": 0.0,
+    "clip_fraction_any_channel": 0.0,
+    "clip_fraction_channel": {
+      "r": 0.0,
+      "g": 0.0,
+      "b": 0.0
+    },
+    "sensor_clip_fraction": 0.0,
+    "midtone_fraction": 0.6692447916666666,
+    "global_contrast": 0.6483473896980285,
+    "dynamic_range_stops": 4.47033123483024,
+    "local_contrast": 0.02316965162754059,
+    "key": "normal",
+    "histogram_v": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      5e-05,
+      0.00018,
+      0.0501,
+      0.00036,
+      8e-05,
+      0.00023,
+      0.00016,
+      0.00026,
+      8e-05,
+      0.00016,
+      0.00018,
+      0.00398,
+      0.01667,
+      0.01552,
+      0.01495,
+      0.01503,
+      0.13831,
+      0.05451,
+      0.01146,
+      0.00958,
+      0.01057,
+      0.01594,
+      0.02008,
+      0.01943,
+      0.06078,
+      0.01799,
+      0.01935,
+      0.02341,
+      0.02354,
+      0.02339,
+      0.02234,
+      0.02164,
+      0.02187,
+      0.02339,
+      0.02398,
+      0.02182,
+      0.01865,
+      0.01812,
+      0.01948,
+      0.0888,
+      0.02008,
+      0.02393,
+      0.02862,
+      0.03008,
+      0.03138,
+      0.00068,
+      0.0188,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "white_balance": {
+    "temperature": {
+      "value": 4621.098042394131,
+      "confidence": 0.607,
+      "reason": "53.1% de pixels neutros indicam 3614 K/tint -6 (câmera: 5197 K/-10); aplicado -576 K / +1 tint com confiança 0.61."
+    },
+    "tint": {
+      "value": -8.64865100852672,
+      "confidence": 0.607,
+      "reason": "53.1% de pixels neutros indicam 3614 K/tint -6 (câmera: 5197 K/-10); aplicado -576 K / +1 tint com confiança 0.61."
+    },
+    "mode": "Custom",
+    "as_shot": {
+      "temperature": 5197.495092551711,
+      "tint": -10.08535162532423
+    },
+    "gains": [
+      0.918,
+      1.0,
+      1.114
+    ],
+    "evidence": {
+      "neutral_fraction": 0.5314,
+      "neutral_pool_fraction": 0.785,
+      "neutral_mode_ab": [
+        6.0,
+        24.0
+      ],
+      "as_shot_kelvin": 5197.5,
+      "as_shot_tint": -10.09,
+      "estimated_kelvin": 3614.0,
+      "estimated_tint": -6.14,
+      "candidate_spread_ab": 3.34,
+      "coverage": 1.0,
+      "coherence": 0.629,
+      "shift_penalty": 0.84,
+      "weight": 0.364
+    }
+  },
+  "clipping": {
+    "sensor_clip_fraction": 0.0,
+    "render_any_channel": 0.0,
+    "per_channel": {
+      "r": 0.0,
+      "g": 0.0,
+      "b": 0.0
+    },
+    "near_black_fraction": 0.0
+  },
+  "colors": {
+    "bands": {
+      "red": {
+        "name": "red",
+        "fraction": 0.0496,
+        "mean_hue": 8.0496,
+        "hue_offset": 8.0496,
+        "hue_std": 2.2612,
+        "mean_saturation": 0.7362,
+        "mean_lightness": 31.4593,
+        "mean_chroma": 43.4006,
+        "clipped_fraction": 0.0
+      },
+      "orange": {
+        "name": "orange",
+        "fraction": 0.6654,
+        "mean_hue": 33.0195,
+        "hue_offset": 3.0195,
+        "hue_std": 3.0957,
+        "mean_saturation": 0.2893,
+        "mean_lightness": 50.2714,
+        "mean_chroma": 14.666,
+        "clipped_fraction": 0.0
+      },
+      "yellow": {
+        "name": "yellow",
+        "fraction": 0.1155,
+        "mean_hue": 54.948,
+        "hue_offset": -5.052,
+        "hue_std": 14.1506,
+        "mean_saturation": 0.3158,
+        "mean_lightness": 52.5679,
+        "mean_chroma": 19.1774,
+        "clipped_fraction": 0.0
+      },
+      "green": {
+        "name": "green",
+        "fraction": 0.0298,
+        "mean_hue": 98.057,
+        "hue_offset": -21.943,
+        "hue_std": 2.3509,
+        "mean_saturation": 0.6915,
+        "mean_lightness": 44.1835,
+        "mean_chroma": 49.688,
+        "clipped_fraction": 0.0
+      },
+      "aqua": {
+        "name": "aqua",
+        "fraction": 0.0287,
+        "mean_hue": 186.5532,
+        "hue_offset": 6.5532,
+        "hue_std": 12.8815,
+        "mean_saturation": 0.382,
+        "mean_lightness": 34.2825,
+        "mean_chroma": 20.9581,
+        "clipped_fraction": 0.0
+      },
+      "blue": {
+        "name": "blue",
+        "fraction": 0.1035,
+        "mean_hue": 227.3343,
+        "hue_offset": -12.6657,
+        "hue_std": 3.1216,
+        "mean_saturation": 0.3737,
+        "mean_lightness": 34.3779,
+        "mean_chroma": 20.8457,
+        "clipped_fraction": 0.0
+      },
+      "purple": {
+        "name": "purple",
+        "fraction": 0.0019,
+        "mean_hue": 266.9904,
+        "hue_offset": -3.0096,
+        "hue_std": 7.0302,
+        "mean_saturation": 0.1863,
+        "mean_lightness": 35.5503,
+        "mean_chroma": 11.6888,
+        "clipped_fraction": 0.0
+      },
+      "magenta": {
+        "name": "magenta",
+        "fraction": 0.0004,
+        "mean_hue": 305.6941,
+        "hue_offset": 5.6941,
+        "hue_std": 15.4738,
+        "mean_saturation": 0.3606,
+        "mean_lightness": 25.306,
+        "mean_chroma": 15.878,
+        "clipped_fraction": 0.0
+      }
+    },
+    "hue": {
+      "red": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "orange": {
+        "value": 0,
+        "confidence": 0.172,
+        "reason": "pele amarelada (+6°): Orange → vermelho"
+      },
+      "yellow": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "green": {
+        "value": 3,
+        "confidence": 0.698,
+        "reason": "matiz médio deslocado -22° e faixa compacta (σ 2°)"
+      },
+      "aqua": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "blue": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "purple": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.2% < 1%)"
+      },
+      "magenta": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.0% < 1%)"
+      }
+    },
+    "saturation": {
+      "red": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "orange": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "yellow": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "green": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "aqua": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "blue": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "purple": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.2% < 1%)"
+      },
+      "magenta": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.0% < 1%)"
+      }
+    },
+    "luminance": {
+      "red": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "orange": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "yellow": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "green": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "aqua": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "blue": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "sem evidência de desequilíbrio"
+      },
+      "purple": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.2% < 1%)"
+      },
+      "magenta": {
+        "value": 0,
+        "confidence": 0.9,
+        "reason": "faixa pouco presente (0.0% < 1%)"
+      }
+    },
+    "skin_protected": true
+  },
+  "skin": {
+    "detected": true,
+    "confidence": 0.2464,
+    "area_fraction": 0.5367,
+    "face_count": 0,
+    "mean_lab": [
+      68.87,
+      5.35,
+      21.75
+    ],
+    "hue_deg": 76.2204,
+    "hue_std_deg": 2.6712,
+    "chroma": 22.3974,
+    "lightness": 68.8695,
+    "median_y": 0.4101,
+    "mean_linear_rgb": [
+      0.56463,
+      0.39578,
+      0.23609
+    ],
+    "deviation": "toward_yellow",
+    "deviation_deg": 6.2204,
+    "reason": "53.7% da imagem com cor de pele, matiz Lab 76° (σ 3°), sem confirmação por rosto — área grande demais para pele, confiança reduzida"
+  },
+  "tone_curve": {
+    "points": [
+      [
+        0,
+        0
+      ],
+      [
+        32,
+        30
+      ],
+      [
+        64,
+        60
+      ],
+      [
+        128,
+        128
+      ],
+      [
+        192,
+        196
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "notes": [
+      "S-curve +1.0 níveis (contraste +8)"
+    ],
+    "confidence": 0.7
+  },
+  "estimates": {
+    "exposure": {
+      "value": -0.95,
+      "confidence": 0.867,
+      "reason": "mediana Y=0.315 vs alvo 0.140 (-1.17 EV); pele Y=0.410 sugere -0.77 EV (peso 0.16)"
+    },
+    "highlights": {
+      "value": 0,
+      "confidence": 0.85,
+      "reason": "p99 pós-exposição V=0.67 (joelho 0.85), pixels cortados 0.00% → highlights preservados"
+    },
+    "shadows": {
+      "value": 0,
+      "confidence": 0.8,
+      "reason": "p5 pós-exposição V=0.15 (alvo ≥ 0.12) → sombras adequadas"
+    },
+    "whites": {
+      "value": 20,
+      "confidence": 0.7,
+      "reason": "p99.9 pós-exposição V=0.67 (alvo 0.96)"
+    },
+    "blacks": {
+      "value": -16,
+      "confidence": 0.75,
+      "reason": "preto não atinge o fundo (p0.1 V=0.145) → aprofundar"
+    },
+    "contrast": {
+      "value": 8,
+      "confidence": 0.65,
+      "reason": "amplitude perceptual p95−p5=0.49 (alvo 0.62), contraste local 0.023, cena normal"
+    },
+    "detail_sharpness": {
+      "value": 35,
+      "confidence": 0.8,
+      "reason": "ISO 200 = 0.0 stops acima de ISO 400: nitidez reduzida com o ruído"
+    },
+    "detail_luminance_nr": {
+      "value": 0,
+      "confidence": 0.8,
+      "reason": "ISO 200 = 0.0 stops acima de ISO 400"
+    },
+    "detail_color_nr": {
+      "value": 25,
+      "confidence": 0.8,
+      "reason": "ISO 200 = 0.0 stops acima de ISO 400"
+    },
+    "detail_masking": {
+      "value": 15,
+      "confidence": 0.8,
+      "reason": "ISO 200 = 0.0 stops acima de ISO 400: máscara de bordas ampliada"
+    },
+    "lens": {
+      "value": true,
+      "confidence": 0.6,
+      "reason": "perfil de lente automático do Camera Raw (lente informada: EF50mm f/1.8 STM; sem mapeamento explícito)"
+    },
+    "vibrance": {
+      "value": 0.0,
+      "confidence": 0.6,
+      "reason": "croma médio C*=18.4: sem ajuste"
+    },
+    "saturation": {
+      "value": 0.0,
+      "confidence": 0.6,
+      "reason": "croma médio C*=18.4: sem ajuste"
+    },
+    "white_balance_mode": {
+      "value": "Custom",
+      "confidence": 0.607,
+      "reason": "53.1% de pixels neutros indicam 3614 K/tint -6 (câmera: 5197 K/-10); aplicado -576 K / +1 tint com confiança 0.61."
+    }
+  },
+  "parameters": {
+    "Version": "16.0",
+    "ProcessVersion": "11.0",
+    "WhiteBalance": "Custom",
+    "Temperature": 4621,
+    "Tint": -9,
+    "Exposure2012": -0.95,
+    "Contrast2012": 8,
+    "Highlights2012": 0,
+    "Shadows2012": 0,
+    "Whites2012": 20,
+    "Blacks2012": -16,
+    "Clarity2012": -4,
+    "Texture": -3,
+    "Dehaze": 0,
+    "Vibrance": 10.0,
+    "Saturation": 0.0,
+    "ParametricShadows": 0,
+    "ParametricDarks": 0,
+    "ParametricLights": 0,
+    "ParametricHighlights": 0,
+    "ParametricShadowSplit": 25,
+    "ParametricMidtoneSplit": 50,
+    "ParametricHighlightSplit": 75,
+    "ToneCurveName2012": "Custom",
+    "CameraProfile": "Camera Portrait",
+    "HueAdjustmentRed": 0,
+    "SaturationAdjustmentRed": 0,
+    "LuminanceAdjustmentRed": 0,
+    "HueAdjustmentOrange": 0,
+    "SaturationAdjustmentOrange": -3,
+    "LuminanceAdjustmentOrange": 3,
+    "HueAdjustmentYellow": 0,
+    "SaturationAdjustmentYellow": -4,
+    "LuminanceAdjustmentYellow": 0,
+    "HueAdjustmentGreen": 3,
+    "SaturationAdjustmentGreen": -5,
+    "LuminanceAdjustmentGreen": 0,
+    "HueAdjustmentAqua": 0,
+    "SaturationAdjustmentAqua": 0,
+    "LuminanceAdjustmentAqua": 0,
+    "HueAdjustmentBlue": 0,
+    "SaturationAdjustmentBlue": 0,
+    "LuminanceAdjustmentBlue": 0,
+    "HueAdjustmentPurple": 0,
+    "SaturationAdjustmentPurple": 0,
+    "LuminanceAdjustmentPurple": 0,
+    "HueAdjustmentMagenta": 0,
+    "SaturationAdjustmentMagenta": 0,
+    "LuminanceAdjustmentMagenta": 0,
+    "Sharpness": 35,
+    "SharpenRadius": 1.0,
+    "SharpenDetail": 20,
+    "SharpenEdgeMasking": 15,
+    "LuminanceSmoothing": 0,
+    "LuminanceNoiseReductionDetail": 50,
+    "LuminanceNoiseReductionContrast": 0,
+    "ColorNoiseReduction": 25,
+    "ColorNoiseReductionDetail": 50,
+    "ColorNoiseReductionSmoothness": 50,
+    "LensProfileEnable": 1,
+    "LensProfileSetup": "LensDefaults",
+    "LensProfileDistortionScale": 100,
+    "LensProfileChromaticAberrationScale": 100,
+    "LensProfileVignettingScale": 100,
+    "AutoLateralCA": 1,
+    "ShadowTint": 0,
+    "RedHue": 0,
+    "RedSaturation": 0,
+    "GreenHue": 0,
+    "GreenSaturation": 0,
+    "BlueHue": 0,
+    "BlueSaturation": 0,
+    "SplitToningShadowHue": 0,
+    "SplitToningShadowSaturation": 0,
+    "SplitToningHighlightHue": 0,
+    "SplitToningHighlightSaturation": 0,
+    "SplitToningBalance": 0,
+    "ColorGradeBlending": 50,
+    "ColorGradeShadowLum": 0,
+    "ColorGradeMidtoneHue": 0,
+    "ColorGradeMidtoneSat": 0,
+    "ColorGradeMidtoneLum": 0,
+    "ColorGradeHighlightLum": 0,
+    "ColorGradeGlobalHue": 0,
+    "ColorGradeGlobalSat": 0,
+    "ColorGradeGlobalLum": 0,
+    "PostCropVignetteAmount": 0,
+    "ConvertToGrayscale": false,
+    "HasSettings": true,
+    "AlreadyApplied": false,
+    "RawFileName": "IMG_0006_warm_cast.CR2"
+  },
+  "clamped": [],
+  "timings_s": {
+    "read_render": 0.006,
+    "analysis": 0.074,
+    "assemble": 0.0
+  },
+  "validation": {
+    "path": "",
+    "ok": true,
+    "errors": [],
+    "warnings": [],
+    "reference_compatibility": {}
+  }
+}

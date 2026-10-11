@@ -1,0 +1,8 @@
+numpy>=1.24
+scipy>=1.10
+opencv-python-headless>=4.8
+rawpy>=0.19
+PyYAML>=6.0
+# optional (compare/preview tool and tests)
+matplotlib>=3.7
+pytest>=7

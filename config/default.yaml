@@ -1,0 +1,161 @@
+# rawxmp default configuration.  Every threshold used by the algorithms lives here.
+# Values are STARTING POINTS chosen from photographic practice; they have not been
+# calibrated against real Canon CR2 files (see docs/CALIBRATION.md).
+
+files:
+  raw_extensions: [".cr2"]          # case-insensitive
+  xmp_extension: ".xmp"             # Windows is case-insensitive; macOS/Linux ACR expects lowercase
+  report_suffix: ".analysis.json"
+
+analysis:
+  max_dimension: 1024               # long edge (px) of the analysis render
+  clip_threshold: 0.985             # linear value regarded as clipped
+  near_black: 0.004                 # linear value regarded as black
+  noise_floor: 0.003                # blacks below this don't count when measuring dynamic range
+  histogram_bins: 64
+  cache_dir: null                   # set (or --cache-dir) to cache analysis renders
+
+# ---- final clamps (all configurable).  Unit = XMP unit ---------------------------------
+limits:
+  exposure:     {min: -2.0, max: 2.0}
+  contrast:     {min: -40,  max: 40}
+  highlights:   {min: -100, max: 0}
+  shadows:      {min: 0,    max: 80}
+  whites:       {min: -40,  max: 25}
+  blacks:       {min: -25,  max: 30}
+  temperature:  {min: 2000, max: 10000}
+  tint:         {min: -80,  max: 80}
+  saturation:   {min: -20,  max: 20}
+  vibrance:     {min: -20,  max: 40}
+  hsl_hue:      {min: -15,  max: 15}
+  hsl_saturation: {min: -25, max: 15}
+  hsl_luminance:  {min: -15, max: 15}
+  clarity:      {min: -20,  max: 30}
+  texture:      {min: -20,  max: 30}
+  dehaze:       {min: -10,  max: 20}
+  sharpness:    {min: 0,    max: 100}
+  luminance_nr: {min: 0,    max: 60}
+  color_nr:     {min: 0,    max: 50}
+  tone_curve_max_deviation: 14      # max |y-x| of any curve point (0..255 scale)
+
+exposure:
+  target_median: 0.14               # target median luminance Y (linear, raw white = 1.0)
+  max_correction_stops: 2.0
+  damping: {normal: 0.85, underexposed: 0.95, low_key: 0.35, high_key: 0.35, high_contrast: 0.6}
+  highlight_recovery_stops: 0.6     # headroom the Highlights slider is trusted to recover
+  rounding: 0.05
+  underexposed: {p999_max: 0.35, p50_ratio: 0.6}   # nothing near white AND dark median → plain under-exposure
+  low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional
+  high_key: {p5_min: 0.12, p50_min: 0.35}
+  high_contrast_stops: 10.5         # log2(p99/p1) above which scene counts as high-contrast
+  skin_target_y: 0.24               # desired skin luminance (linear Y)
+  skin_weight: 0.5                  # max weight of skin-based exposure estimate
+  highlights:
+    knee: 0.85                      # post-exposure p99 above this starts pulling highlights
+    max_pull: -60
+    clip_fraction_full: 0.02        # clipped-pixel fraction for full highlight pressure
+  shadows:
+    p5_target_v: 0.12               # perceptual (sRGB-encoded) value p5 should reach
+    max_lift: 60
+    flat_p5_v: 0.28
+  blacks:
+    p01_target_v: 0.02
+    deepen_scale: 22
+    p01_margin: 0.04
+    crushed_fraction: 0.01
+    lift_scale: 30
+  whites:
+    p999_target_v: 0.96
+    gain: 90
+    max_gain: 20
+  contrast:
+    target_spread: 0.62             # target perceptual p95-p5 spread
+    gain: 60
+    local_low: 0.012                # std of local contrast below → flat image
+
+white_balance:
+  min_candidate_fraction: 0.02      # fraction of neutral-ish pixels for any evidence
+  full_candidate_fraction: 0.10
+  neutral_chroma: 55.0              # Lab C* limit of the pool searched for the neutral cluster
+  mode_radius: 8.0                  # a*b* radius around the cluster mode counted as neutral
+  neutral_l_range: [22, 92]
+  max_shift_kelvin: 700             # hard cap of image-driven shift
+  max_shift_tint: 12
+  image_trust: 0.6                  # blend factor when evidence is perfect
+  min_confidence: 0.35              # below this the image evidence is ignored (As Shot kept)
+  apply_threshold: {kelvin: 120, tint: 3}   # below → keep "As Shot"
+  tint_per_duv: -3000.0             # Camera Raw tint units per unit Duv (calibration constant)
+  kelvin_offset: 0.0                # per-camera systematic offset vs Camera Raw's display (calibrate)
+  plausible_cct: [2500, 9500]
+  plausible_duv: 0.02
+  max_as_shot_tint: 70             # beyond this the matrix→Kelvin/tint mapping is distrusted → As Shot
+  write_as_shot_values: false     # in "As Shot" mode omit Temperature/Tint (ACR recomputes them)
+  skin_hue_range: [34, 76]          # Lab hue° where skin is considered plausible
+  default_kelvin: 5500
+
+skin:
+  enabled: true
+  min_area_fraction: 0.003
+  full_area_fraction: 0.04
+  ycrcb: {cr: [133, 173], cb: [77, 127]}
+  lab_hue: [22, 78]
+  lab_chroma: [9, 55]
+  lab_l: [25, 92]
+  hsv_sat: [0.08, 0.78]
+  hue_plausible: [38, 70]           # healthy skin hue range (Lab h°) used for deviation scoring
+  implausible_area_start: 0.30      # above this area fraction confidence is progressively reduced
+  detector_confidence_cap: 0.85     # colour-only detection can be fooled (wood, sand)
+  face_cascade: null                # optional path to haarcascade_frontalface_default.xml
+
+color:
+  band_centers: {red: 0, orange: 30, yellow: 60, green: 120, aqua: 180, blue: 240, purple: 270, magenta: 300}
+  min_band_fraction: 0.01           # band must cover this fraction of the image to be evaluated
+  chroma_min_sat: 0.12
+  sat_high: 0.80                    # mean HSV saturation above → desaturate
+  sat_gain: 120
+  clip_fraction: 0.06               # fraction of "colour-clipped" pixels in band → extra desaturation
+  hue_dead_zone: 14                 # degrees of mean hue offset tolerated
+  hue_gain: 0.5
+  hue_std_max: 18                   # band must be compact to justify a hue move
+  luminance_dark: 22                # mean L* below with strong chroma → lift
+  luminance_gain: 0.25
+  max_adjust: {hue: 8, saturation: 15, luminance: 8}
+  skin_protection: 0.85             # how much skin confidence attenuates red/orange/yellow
+  skin_cap: 4                       # abs cap of red/orange/yellow moves when skin detected
+  skin_hue_nudge: 5                 # max Orange hue nudge to pull skin back into range
+
+tone_curve:
+  x_points: [0, 32, 64, 128, 192, 255]
+  contrast_to_levels: 0.12
+  max_s_levels: 8
+  shadow_lift_levels: 5
+  highlight_rolloff_levels: 6
+  skin_slope: [0.9, 1.2]            # allowed slope between x=128 and x=192
+  min_slope: 0.35
+
+detail:
+  iso_base: 400
+  sharpness_drop_per_stop: 4
+  edge_masking_per_stop: 10
+  luminance_nr_per_stop: 9
+  color_nr_per_stop: 3
+
+lens:
+  enable_profile: true
+  auto_lateral_ca: true
+  profiles: {}                      # "lens model": {name: "...", filename: "..."} optional exact LR profile
+
+consistency:
+  enabled: true
+  scope: folder                     # folder | all
+  kelvin_tolerance: 1500            # only group shots whose as-shot Kelvin is within this of the group median
+  max_pull: 0.6                     # max fraction pulled toward the group median
+  certain_above: 0.7                # estimates with confidence >= this are never pulled; below, pull grows linearly
+
+report:
+  include_histogram: true
+
+xmp:
+  crs_version: "16.0"
+  process_version: "11.0"
+  creator_tool: "rawxmp 0.1.0"

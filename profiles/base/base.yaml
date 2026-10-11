@@ -1,0 +1,46 @@
+# Base STYLE: the look that is identical for every photo (STYLE = consistent appearance).
+# Per-image corrections are computed separately and added on top (IMAGE CORRECTION).
+style:
+  name: base
+  camera_profile: "Adobe Standard"
+  saturation: 0
+  vibrance: 8
+  clarity: 0
+  texture: 0
+  dehaze: 0
+  exposure_bias: 0.0              # stops added after the automatic estimate
+  contrast_bias: 0
+  highlights_bias: 0
+  shadows_bias: 0
+  tone_curve:
+    # (x, y) points, 0..255.  Gentle S-curve; per-image modulation is added on top.
+    points: [[0, 0], [32, 29], [64, 60], [128, 128], [192, 197], [255, 255]]
+    parametric: {shadows: 0, darks: 0, lights: 0, highlights: 0}
+  hsl:
+    hue:        {red: 0, orange: 0, yellow: 0, green: 0, aqua: 0, blue: 0, purple: 0, magenta: 0}
+    saturation: {red: 0, orange: 0, yellow: 0, green: 0, aqua: 0, blue: 0, purple: 0, magenta: 0}
+    luminance:  {red: 0, orange: 0, yellow: 0, green: 0, aqua: 0, blue: 0, purple: 0, magenta: 0}
+  sharpening: {amount: 40, radius: 1.0, detail: 25, masking: 0}
+  noise_reduction:
+    luminance: 0
+    luminance_detail: 50
+    luminance_contrast: 0
+    color: 25
+    color_detail: 50
+    color_smoothness: 50
+  color_grade:
+    shadows:    {hue: 0, sat: 0, lum: 0}
+    midtones:   {hue: 0, sat: 0, lum: 0}
+    highlights: {hue: 0, sat: 0, lum: 0}
+    global:     {hue: 0, sat: 0, lum: 0}
+    blending: 50
+    balance: 0
+  calibration:                    # Camera Calibration panel (Red/Green/Blue primaries)
+    shadow_tint: 0
+    red_hue: 0
+    red_saturation: 0
+    green_hue: 0
+    green_saturation: 0
+    blue_hue: 0
+    blue_saturation: 0
+  vignette: 0

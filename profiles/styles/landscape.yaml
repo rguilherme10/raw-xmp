@@ -1,0 +1,15 @@
+# Landscape: more punch, clarity, richer greens/blues.
+style:
+  name: landscape
+  camera_profile: "Camera Landscape"
+  vibrance: 18
+  saturation: 3
+  clarity: 8
+  texture: 6
+  dehaze: 4
+  tone_curve:
+    points: [[0, 0], [32, 27], [64, 56], [128, 128], [192, 200], [255, 255]]
+  hsl:
+    saturation: {green: 4, blue: 5, aqua: 3}
+    luminance:  {blue: -3}
+  sharpening: {amount: 55, radius: 1.0, detail: 30, masking: 5}

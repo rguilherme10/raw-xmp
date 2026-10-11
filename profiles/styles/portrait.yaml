@@ -1,0 +1,15 @@
+# Portrait: softer contrast, protected skin, slightly warm Orange/Yellow desaturation, light clarity cut.
+style:
+  name: portrait
+  camera_profile: "Camera Portrait"
+  vibrance: 10
+  clarity: -4
+  texture: -3
+  tone_curve:
+    points: [[0, 0], [32, 30], [64, 61], [128, 128], [192, 195], [255, 255]]
+  hsl:
+    saturation: {orange: -3, yellow: -4, green: -5}
+    luminance:  {orange: 3}
+  sharpening: {amount: 35, radius: 1.0, detail: 20, masking: 15}
+exposure:
+  skin_weight: 0.65

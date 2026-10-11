@@ -1,0 +1,8 @@
+# Neutral: nearly flat look, only corrections.
+style:
+  name: neutral
+  camera_profile: "Adobe Standard"
+  vibrance: 0
+  tone_curve:
+    points: [[0, 0], [32, 32], [64, 64], [128, 128], [192, 192], [255, 255]]
+  sharpening: {amount: 30, radius: 1.0, detail: 25, masking: 0}
