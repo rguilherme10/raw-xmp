@@ -133,3 +133,16 @@ def test_skin_debug_reports_criteria(cfg):
     detect_skin(scene_with_patch((224, 172, 140), 0.3), cfg, dbg)
     assert set(dbg["pass_fraction"]) == {"ycrcb", "lab_hue", "lab_chroma", "lab_l", "hsv_sat", "not_clipped"}
     assert set(dbg["rejected_only_by"]) == set(dbg["pass_fraction"])
+
+
+def test_beige_floor_does_not_drive_skin_luminance(cfg):
+    """Regression (IMG_3004): a bright, high-hue beige floor must not raise the measured skin luminance."""
+    img = solid((120, 120, 120))
+    face = srgb_decode(np.array([205, 150, 120], np.float32) / 255.0) * 0.5          # darker, hue ~50
+    floor = srgb_decode(np.array([235, 205, 150], np.float32) / 255.0)               # bright beige, hue ~70
+    img[10:70, 10:50] = face
+    img[80:115, 20:150] = floor
+    only_face = detect_skin(np.where(np.arange(img.shape[0])[:, None, None] < 75, img, solid((120, 120, 120))), cfg)
+    both = detect_skin(img, cfg)
+    assert both.detected and only_face.detected
+    assert both.median_y < only_face.median_y * 1.6        # without hue weighting this was > 3x

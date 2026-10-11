@@ -125,11 +125,27 @@ def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None) -> SkinResult:
 
     if debug is not None:
         debug["mask_kept"] = mask
+    # Components are weighted by how skin-like their hue is: beige floors / walls / wood sit at Lab hue >= ~62,
+    # real faces and hands at ~40-58 (measured on 10 real photos).  Their luminance must not drive the exposure.
+    lo, hi = s["hue_prefer"]
+    comp_ids = np.arange(1, n + 1)
+    comp_hue = np.asarray(ndimage.median(hue, labels, comp_ids))
+    w_comp = np.where(comp_hue <= lo, 1.0, np.clip(1.0 - (comp_hue - lo) / (hi - lo) * (1.0 - s["hue_prefer_min_weight"]),
+                                                   s["hue_prefer_min_weight"], 1.0))
+    wlab = np.concatenate([[0.0], w_comp])
+    wpix = wlab[labels][mask]
+    wpix = wpix / max(wpix.sum(), 1e-9)
+
+    def wmed(v: np.ndarray) -> float:
+        o = np.argsort(v)
+        c = np.cumsum(wpix[o])
+        return float(v[o][np.searchsorted(c, 0.5)])
+
     lab_m, hue_m = lab[mask], hue[mask]
-    mean_hue, hue_std = circular_mean_deg(hue_m)
-    mean_lab = lab_m.mean(0)
+    mean_hue, hue_std = circular_mean_deg(hue_m, wpix)
+    mean_lab = (lab_m * wpix[:, None]).sum(0)
     y = luminance(lin)[mask] / gain                # back to the frame's real exposure
-    rgb_mean = lin[mask].mean(0) / gain
+    rgb_mean = (lin[mask] * wpix[:, None]).sum(0) / gain
     faces = _faces(enc, s.get("face_cascade"))
 
     area_score = clip01((frac - s["min_area_fraction"]) / max(s["full_area_fraction"] - s["min_area_fraction"], 1e-6))
@@ -152,7 +168,7 @@ def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None) -> SkinResult:
         detected=True, confidence=float(conf), area_fraction=frac, face_count=faces,
         mean_lab=tuple(float(x) for x in mean_lab), hue_deg=mean_hue, hue_std_deg=hue_std,
         chroma=float(np.hypot(mean_lab[1], mean_lab[2])), lightness=float(mean_lab[0]),
-        median_y=float(np.median(y)), mean_linear_rgb=tuple(float(x) for x in rgb_mean),
+        median_y=wmed(y), mean_linear_rgb=tuple(float(x) for x in rgb_mean),
         deviation=dev, deviation_deg=dd,
         reason=(f"{frac * 100:.1f}% da imagem com cor de pele, matiz Lab {mean_hue:.0f}° (σ {hue_std:.0f}°)"
                 + (f", {faces} rosto(s) confirmado(s)" if faces else ", sem confirmação por rosto")

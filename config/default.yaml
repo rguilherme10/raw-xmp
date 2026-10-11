@@ -106,6 +106,8 @@ skin:
   lab_chroma: [9, 55]
   lab_l: [25, 92]
   hsv_sat: [0.08, 0.78]
+  hue_prefer: [60, 68]              # Lab hue above 60 is progressively down-weighted (beige floors/walls/wood), weight floor below
+  hue_prefer_min_weight: 0.05
   hue_plausible: [38, 70]           # healthy skin hue range (Lab h°) used for deviation scoring
   normalise_median: 0.14            # skin colour is judged after scaling the frame's median luminance to this
   max_normalise_gain: 8.0
