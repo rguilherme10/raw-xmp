@@ -33,7 +33,8 @@ contraste local (σ de V − gaussiana). **Chave da cena**:
    * **Contrast**: amplitude p95−p5 vs alvo 0,62, bônus se contraste local baixo, nunca positivo em alto contraste.
 
 ## 4. Balanço de branco (`white_balance/estimator.py`)
-* A câmera é o *prior*: `n = 1/mult_WB` (resposta do iluminante) → `XYZ = M⁻¹ n` (M normalizada: D65→(1,1,1)) → CCT/Duv → `Tint = Duv · tint_per_duv`.
+* A câmera é o *prior*: `n = 1/mult_WB` (resposta do iluminante, unidades brutas) → `XYZ = M⁻¹ n` com **M não normalizada** → CCT/Duv → `Tint = Duv · tint_per_duv`.
+* A orientação de M (XYZ→cam ou transposta) é **verificada em cada arquivo** contra o `daylight_whitebalance` do LibRaw (M·D65 deve reproduzi-lo); se nenhuma orientação confere, a matriz é descartada e o WB fica "As Shot". `python main.py diagnose IMG.CR2` mostra tudo isso.
 * Se Kelvin/tint da câmera forem implausíveis (mapeamento de matriz duvidoso) → "As Shot" com confiança 0,3.
 * **Evidência da imagem**: dentre pixels pouco cromáticos (C* < 55, L* 22–92, sem clipping, sem pele) procura-se a **moda** num histograma 2D de (a*,b*) — superfícies neutras formam um cluster denso mesmo sob dominante.
   Estimativa no **espaço da câmera** (`C · rgb_médio`), nunca em sRGB.

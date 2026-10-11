@@ -130,6 +130,30 @@ def cmd_compare(a) -> int:
     return 0
 
 
+def cmd_diagnose(a) -> int:
+    """Print what LibRaw reports for a file and how it is interpreted (send this when WB looks wrong)."""
+    import numpy as np
+    import rawpy
+    from ..raw.reader import RawReader, select_xyz_to_cam
+    from ..white_balance.estimator import neutral_to_kelvin_tint
+    cfg = load_config(a.style, a.config)
+    r = RawReader(a.raw)
+    info = r.read_info()
+    out = {"camera": info.camera, "lens": info.lens, "iso": info.iso, "black_level": info.black_level,
+           "white_level": info.white_level, "camera_wb": info.camera_wb, "daylight_wb": info.daylight_wb,
+           "matrix_note": info.matrix_note, "xyz_to_cam_used": info.xyz_to_cam, "warnings": info.warnings}
+    with rawpy.imread(str(a.raw)) as raw:
+        out["rawpy_rgb_xyz_matrix"] = np.asarray(raw.rgb_xyz_matrix).round(5).tolist()
+        out["rawpy_color_matrix"] = np.asarray(raw.color_matrix).round(5).tolist()
+        out["rawpy_camera_whitebalance"] = [round(float(x), 5) for x in raw.camera_whitebalance]
+        out["rawpy_daylight_whitebalance"] = [round(float(x), 5) for x in raw.daylight_whitebalance]
+    if info.xyz_to_cam and info.camera_neutral is not None:
+        k, t = neutral_to_kelvin_tint(info.camera_neutral, np.asarray(info.xyz_to_cam), cfg)
+        out["as_shot_kelvin"], out["as_shot_tint"] = round(k, 1), round(t, 2)
+    print(json.dumps(out, indent=2, ensure_ascii=False))
+    return 0
+
+
 def cmd_styles(a) -> int:
     print("Estilos disponíveis:", ", ".join(["base"] + list_styles()))
     return 0
@@ -177,6 +201,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
     p.add_argument("--log-file")
     p.set_defaults(func=cmd_compare)
+
+    p = sub.add_parser("diagnose", help="mostra matriz/WB lidos pelo LibRaw e como foram interpretados")
+    p.add_argument("raw")
+    p.add_argument("--style"), p.add_argument("--config")
+    p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
+    p.add_argument("--log-file")
+    p.set_defaults(func=cmd_diagnose)
 
     p = sub.add_parser("styles", help="lista os perfis de estilo")
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
