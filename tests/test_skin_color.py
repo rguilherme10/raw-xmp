@@ -118,3 +118,18 @@ def test_hsl_values_are_integers_within_limits(decisions, cfg):
         for c in ("Red", "Orange", "Yellow", "Green", "Aqua", "Blue", "Purple", "Magenta"):
             v = d.params[f"SaturationAdjustment{c}"]
             assert float(v) == int(v) and lo <= v <= hi
+
+
+def test_dark_frame_skin_is_still_found_and_reports_real_luminance(cfg):
+    bright = scene_with_patch((224, 172, 140), 0.3)
+    dark = bright * 0.12                                  # same scene, ~3 stops underexposed
+    a, b = detect_skin(bright, cfg), detect_skin(dark, cfg)
+    assert a.detected and b.detected
+    assert b.median_y == pytest.approx(a.median_y * 0.12, rel=0.25)   # luminance reported at the real exposure
+
+
+def test_skin_debug_reports_criteria(cfg):
+    dbg = {}
+    detect_skin(scene_with_patch((224, 172, 140), 0.3), cfg, dbg)
+    assert set(dbg["pass_fraction"]) == {"ycrcb", "lab_hue", "lab_chroma", "lab_l", "hsv_sat", "not_clipped"}
+    assert set(dbg["rejected_only_by"]) == set(dbg["pass_fraction"])

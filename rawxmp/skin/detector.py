@@ -60,10 +60,17 @@ def _faces(enc: np.ndarray, cascade_path) -> int:
     return int(len(cc.detectMultiScale(gray, 1.1, 5, minSize=(max(24, gray.shape[0] // 14),) * 2)))
 
 
-def detect_skin(lin: np.ndarray, cfg) -> SkinResult:
+def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None) -> SkinResult:
+    """Detect skin.  ``debug`` (optional dict) receives per-criterion pass fractions for diagnosis."""
     s = cfg.section("skin")
     if not s.get("enabled", True):
         return SkinResult(reason="detecção de pele desativada na configuração")
+    # Brightness normalisation: chroma/Cr collapse in dark frames, so judge colour at a standard exposure.
+    # Luminance values reported in the result are converted back to the original exposure.
+    med = float(np.median(luminance(lin)))
+    gain = float(np.clip(s.get("normalise_median", 0.14) / max(med, 1e-4), 1.0, s.get("max_normalise_gain", 8.0)))
+    lin_orig = lin
+    lin = np.clip(lin * gain, 0, 1).astype(np.float32)
     enc = srgb_encode(lin).astype(np.float32)
     h, w = enc.shape[:2]
     ycc = cv2.cvtColor((enc * 255).astype(np.uint8), cv2.COLOR_RGB2YCrCb)
@@ -73,16 +80,31 @@ def detect_skin(lin: np.ndarray, cfg) -> SkinResult:
     chroma = np.hypot(lab[..., 1], lab[..., 2])
     hsv = rgb_to_hsv(enc)
 
-    m = ((cr >= s["ycrcb"]["cr"][0]) & (cr <= s["ycrcb"]["cr"][1]) &
-         (cb >= s["ycrcb"]["cb"][0]) & (cb <= s["ycrcb"]["cb"][1]) &
-         (hue >= s["lab_hue"][0]) & (hue <= s["lab_hue"][1]) &
-         (chroma >= s["lab_chroma"][0]) & (chroma <= s["lab_chroma"][1]) &
-         (lab[..., 0] >= s["lab_l"][0]) & (lab[..., 0] <= s["lab_l"][1]) &
-         (hsv[..., 1] >= s["hsv_sat"][0]) & (hsv[..., 1] <= s["hsv_sat"][1]) &
-         (lin.max(-1) < 0.985))
+    crit = {
+        "ycrcb": (cr >= s["ycrcb"]["cr"][0]) & (cr <= s["ycrcb"]["cr"][1]) &
+                 (cb >= s["ycrcb"]["cb"][0]) & (cb <= s["ycrcb"]["cb"][1]),
+        "lab_hue": (hue >= s["lab_hue"][0]) & (hue <= s["lab_hue"][1]),
+        "lab_chroma": (chroma >= s["lab_chroma"][0]) & (chroma <= s["lab_chroma"][1]),
+        "lab_l": (lab[..., 0] >= s["lab_l"][0]) & (lab[..., 0] <= s["lab_l"][1]),
+        "hsv_sat": (hsv[..., 1] >= s["hsv_sat"][0]) & (hsv[..., 1] <= s["hsv_sat"][1]),
+        "not_clipped": lin.max(-1) < 0.985,
+    }
+    m = np.logical_and.reduce(list(crit.values()))
+    if debug is not None:
+        debug["normalise_gain"] = round(gain, 2)
+        debug["pass_fraction"] = {k: round(float(v.mean()), 4) for k, v in crit.items()}
+        debug["pass_all_raw"] = round(float(m.mean()), 4)
+        # pixels that fail ONLY this criterion: shows which threshold is rejecting skin-like pixels
+        debug["rejected_only_by"] = {
+            k: round(float(np.logical_and.reduce([v for kk, v in crit.items() if kk != k]).mean() - m.mean()), 4)
+            for k in crit}
+        debug["mask_all"] = m
+        debug["rgb_enc"] = enc
     k = max(3, int(round(min(h, w) / 150)) | 1)
     m = ndimage.binary_opening(m, structure=np.ones((k, k)))
     labels, n = ndimage.label(m)
+    if debug is not None:
+        debug["components_after_opening"] = int(n)
     if n == 0:
         return SkinResult(reason="nenhuma região com cor compatível com pele")
     areas = ndimage.sum(m, labels, index=np.arange(1, n + 1))
@@ -101,11 +123,13 @@ def detect_skin(lin: np.ndarray, cfg) -> SkinResult:
     if frac < s["min_area_fraction"]:
         return SkinResult(area_fraction=frac, reason="regiões candidatas pequenas ou irregulares demais")
 
+    if debug is not None:
+        debug["mask_kept"] = mask
     lab_m, hue_m = lab[mask], hue[mask]
     mean_hue, hue_std = circular_mean_deg(hue_m)
     mean_lab = lab_m.mean(0)
-    y = luminance(lin)[mask]
-    rgb_mean = lin[mask].mean(0)
+    y = luminance(lin)[mask] / gain                # back to the frame's real exposure
+    rgb_mean = lin[mask].mean(0) / gain
     faces = _faces(enc, s.get("face_cascade"))
 
     area_score = clip01((frac - s["min_area_fraction"]) / max(s["full_area_fraction"] - s["min_area_fraction"], 1e-6))

@@ -154,6 +154,31 @@ def cmd_diagnose(a) -> int:
     return 0
 
 
+def cmd_skin_debug(a) -> int:
+    """Why was (or wasn't) skin found?  Per-criterion pass rates + overlay PNG (green = kept, red = candidate removed)."""
+    import cv2
+    import numpy as np
+    from ..raw.reader import RawReader
+    from ..raw.render import render_for_analysis
+    from ..skin.detector import detect_skin
+    cfg = load_config(a.style, a.config)
+    lin = render_for_analysis(RawReader(a.raw), cfg.get("analysis.max_dimension", 1024))
+    dbg: dict = {}
+    res = detect_skin(lin, cfg, dbg)
+    over = dbg.get("rgb_enc", lin).copy()
+    if "mask_all" in dbg:
+        over[dbg["mask_all"]] = over[dbg["mask_all"]] * 0.4 + np.array([1, 0, 0]) * 0.6
+        if "mask_kept" in dbg:
+            k = dbg["mask_kept"]
+            over[k] = over[k] * 0.4 + np.array([0, 1, 0]) * 0.6
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(out), cv2.cvtColor((np.clip(over, 0, 1) * 255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+    info = {k: v for k, v in dbg.items() if k not in ("mask_all", "mask_kept", "rgb_enc")}
+    print(json.dumps({"result": res.to_dict(), "debug": info, "overlay": str(out)}, indent=2, ensure_ascii=False))
+    return 0
+
+
 def cmd_styles(a) -> int:
     print("Estilos disponíveis:", ", ".join(["base"] + list_styles()))
     return 0
@@ -208,6 +233,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
     p.add_argument("--log-file")
     p.set_defaults(func=cmd_diagnose)
+
+    p = sub.add_parser("skin-debug", help="diagnostica a detecção de pele de uma foto (critérios + PNG de sobreposição)")
+    p.add_argument("raw")
+    p.add_argument("--out", default="output/skin_debug.png")
+    p.add_argument("--style"), p.add_argument("--config")
+    p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
+    p.add_argument("--log-file")
+    p.set_defaults(func=cmd_skin_debug)
 
     p = sub.add_parser("styles", help="lista os perfis de estilo")
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")

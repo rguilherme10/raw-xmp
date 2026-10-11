@@ -104,6 +104,8 @@ skin:
   lab_l: [25, 92]
   hsv_sat: [0.08, 0.78]
   hue_plausible: [38, 70]           # healthy skin hue range (Lab h°) used for deviation scoring
+  normalise_median: 0.14            # skin colour is judged after scaling the frame's median luminance to this
+  max_normalise_gain: 8.0
   implausible_area_start: 0.30      # above this area fraction confidence is progressively reduced
   detector_confidence_cap: 0.85     # colour-only detection can be fooled (wood, sand)
   face_cascade: null                # optional path to haarcascade_frontalface_default.xml
