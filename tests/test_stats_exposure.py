@@ -72,7 +72,8 @@ def stats_for(decisions, k):
 
 def test_underexposed_gets_positive_exposure(decisions):
     d = decisions
-    assert d["underexposed"].params["Exposure2012"] > 0.5
+    assert d["underexposed"].params["Exposure2012"] > 0.2
+    assert d["underexposed"].params["Exposure2012"] > d["normal"].params["Exposure2012"] + 0.8   # skin dark → brighten, bright → not
     assert d["underexposed"].stats.key == "underexposed"
 
 

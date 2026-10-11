@@ -28,3 +28,14 @@ Não implementada. Só faz sentido se, após calibrar, a correlação de Exposur
 | Overfitting | poucos dados ⇒ modelo pequeno, regularização forte, *shrinkage* para o determinístico quando a confiança é baixa, comparação obrigatória contra a baseline determinística; se não ganhar em validação por grupo, descarta-se. |
 | Câmeras | modelo (ou *offset*) por câmera; câmera nova começa só com regras. |
 | Iluminações | estratificar/avaliar por faixa de Kelvin e por interno/externo; WB aprendido só com cobertura de luz suficiente, senão regras. |
+
+## Registro de calibrações realizadas
+**4 pares reais (Canon EOS Rebel T6i, ISO 800, `exemplo-para-calibrar/`)**
+| Parâmetro | Antes | Depois |
+|---|---|---|
+| Exposição — erro médio / correlação | 0,78 EV / 0,63 | **0,18 EV / 0,99** |
+Descoberta: nas 4 fotos a pele fica em Y linear = 0,095–0,136 após a sua exposição (as medianas globais variam 0,010–0,159). Portanto
+`exposure.skin_target_y` = 0,115 (era 0,24), peso da pele 0,9 (era 0,5), sem amortecimento low-key quando há pele, headroom medido por p99 (não p99,9),
+teto de correção 2,5 EV. **Amostra pequena (4 fotos, uma sessão)**: reavalie com mais pares.
+Balanço de branco: **não calibrado** — suas Temperature/Tint (4058–4910 K, tint −3…−6) diferem do as-shot calculado (5155–5560 K, tint +1…+2) e parecem
+vir de WB sincronizado. O deslocamento de tint por imagem foi limitado a ±2. Para calibrar `white_balance.kelvin_offset` informe o Temperature/Tint que o Lightroom mostra em "As Shot" para uma foto.

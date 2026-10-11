@@ -23,18 +23,20 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     d_global = float(np.log2(target / p50))
     parts = [f"mediana Y={p50:.3f} vs alvo {target:.3f} ({d_global:+.2f} EV)"]
     delta = d_global
+    skin_led = False
 
     # --- 2. evidence from skin (priority subject) -----------------------------------------
     if skin.detected and skin.median_y:
         d_skin = float(np.log2(ex["skin_target_y"] / max(skin.median_y, 1e-4)))
-        w = ex["skin_weight"] * skin.confidence
+        w = ex["skin_weight"] * min(1.0, skin.confidence / ex["skin_full_confidence"])
         delta = (1 - w) * d_global + w * d_skin
+        skin_led = w >= 0.5
         parts.append(f"pele Y={skin.median_y:.3f} sugere {d_skin:+.2f} EV (peso {w:.2f})")
 
-    # --- 3. scene key damping ------------------------------------------------------------
-    damp = ex["damping"].get(stats.key, ex["damping"]["normal"])
+    # --- 3. scene key damping (not applied when a person is the subject: dark skin is not "creative low-key") ------------------------------------------------------------
+    damp = ex["damping"]["normal"] if skin_led else ex["damping"].get(stats.key, ex["damping"]["normal"])
     delta *= damp
-    if stats.key != "normal":
+    if stats.key != "normal" and not skin_led:
         parts.append(f"cena {stats.key} → correção atenuada ×{damp:.2f}")
 
     # --- 4. protect highlights: never brighten past the point where the bright subject clips -----
@@ -42,8 +44,9 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     conf = 0.85
     p99 = max(stats.pct_y["p99"], 1e-4)
     p999 = max(stats.pct_y["p99.9"], 1e-4)
-    allowed_up = min(float(np.log2(ex["highlight_ceiling"] / p99)),
-                     float(np.log2(0.99 / p999)) + ex["highlight_recovery_stops"])
+    # Judged on p99 (the bright subject), not p99.9: tiny specular lights may clip and be pulled back with
+    # Highlights (measured on the user's own edits: +2.2 EV with p99.9 at 0.77).
+    allowed_up = float(np.log2(ex["highlight_ceiling"] / p99))
     if stats.sensor_clip_fraction > 0.002 or stats.near_white_fraction > 0.01:
         allowed_up = min(allowed_up, 0.0)
         parts.append("highlights já cortados: sem aumento de exposição")

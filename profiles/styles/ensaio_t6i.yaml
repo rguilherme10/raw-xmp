@@ -1,0 +1,102 @@
+# Estilo 'ensaio_t6i' gerado de 4 XMP(s) por `rawxmp make-style`.
+# Edite livremente. Exposição e balanço de branco NÃO fazem parte do estilo (são calculados por foto).
+style:
+  name: ensaio_t6i
+  camera_profile: Adobe Standard
+  saturation: 0
+  vibrance: 30
+  clarity: 2
+  texture: 0
+  dehaze: 9
+  contrast_bias: 0
+  highlights_bias: -54
+  shadows_bias: 56
+  whites_bias: 0
+  blacks_bias: -18
+  tone_curve:
+    points:
+    - - 0
+      - 0
+    - - 32
+      - 29
+    - - 64
+      - 59
+    - - 128
+      - 128
+    - - 192
+      - 198
+    - - 255
+      - 255
+    parametric:
+      shadows: 0
+      darks: 0
+      lights: 0
+      highlights: 0
+  hsl:
+    hue:
+      red: 21
+      orange: 4
+      yellow: -10
+      green: 0
+      aqua: 0
+      blue: 0
+      purple: 0
+      magenta: 0
+    saturation:
+      red: -3
+      orange: -8
+      yellow: -13
+      green: -20
+      aqua: 0
+      blue: 0
+      purple: 0
+      magenta: 0
+    luminance:
+      red: 0
+      orange: 0
+      yellow: 0
+      green: 0
+      aqua: 0
+      blue: 0
+      purple: 0
+      magenta: 0
+  sharpening:
+    amount: 36
+    radius: 1.0
+    detail: 25
+    masking: 10
+  noise_reduction:
+    luminance: 4
+    luminance_detail: 50
+    luminance_contrast: 0
+    color: 14
+    color_detail: 50
+    color_smoothness: 50
+  color_grade:
+    shadows:
+      hue: 0
+      sat: 0
+      lum: 0
+    midtones:
+      hue: 0
+      sat: 0
+      lum: 0
+    highlights:
+      hue: 0
+      sat: 0
+      lum: 0
+    global:
+      hue: 0
+      sat: 0
+      lum: 0
+    blending: 50
+    balance: 0
+  calibration:
+    shadow_tint: 0
+    red_hue: 0
+    red_saturation: 0
+    green_hue: 0
+    green_saturation: 0
+    blue_hue: 0
+    blue_saturation: 0
+  vignette: 0

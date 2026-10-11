@@ -17,7 +17,7 @@ analysis:
 
 # ---- final clamps (all configurable).  Unit = XMP unit ---------------------------------
 limits:
-  exposure:     {min: -2.0, max: 2.0}
+  exposure:     {min: -2.5, max: 2.5}
   contrast:     {min: -40,  max: 40}
   highlights:   {min: -100, max: 0}
   shadows:      {min: 0,    max: 80}
@@ -40,7 +40,7 @@ limits:
 
 exposure:
   target_median: 0.14               # target median luminance Y (linear, raw white = 1.0)
-  max_correction_stops: 1.5
+  max_correction_stops: 2.5
   damping: {normal: 0.85, underexposed: 0.95, low_key: 0.35, high_key: 0.35, high_contrast: 0.6}
   highlight_ceiling: 0.80           # brightening may push the bright subject (p99) up to this linear value, no further
   highlight_recovery_stops: 0.15    # extra tolerance for the very top (p99.9) that Highlights can recover
@@ -49,8 +49,9 @@ exposure:
   low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional
   high_key: {p5_min: 0.12, p50_min: 0.35}
   high_contrast_stops: 10.5         # log2(p99/p1) above which scene counts as high-contrast
-  skin_target_y: 0.24               # desired skin luminance (linear Y)
-  skin_weight: 0.5                  # max weight of skin-based exposure estimate
+  skin_target_y: 0.115              # desired skin luminance (linear Y). Measured on 4 human edits: 0.095–0.136 (mean 0.117)
+  skin_weight: 0.9                  # max weight of the skin-based exposure estimate (people are the subject)
+  skin_full_confidence: 0.6         # skin confidence at which that max weight is reached
   highlights:
     knee: 0.85                      # post-exposure p99 above this starts pulling highlights
     max_pull: -60
@@ -81,7 +82,7 @@ white_balance:
   mode_radius: 8.0                  # a*b* radius around the cluster mode counted as neutral
   neutral_l_range: [22, 92]
   max_shift_kelvin: 700             # hard cap of image-driven shift
-  max_shift_tint: 12
+  max_shift_tint: 2                 # tint from neutrals was wrong by ~8 on real mixed-light scenes: keep it small
   image_trust: 0.6                  # blend factor when evidence is perfect
   min_confidence: 0.35              # below this the image evidence is ignored (As Shot kept)
   apply_threshold: {kelvin: 120, tint: 3}   # below → keep "As Shot"

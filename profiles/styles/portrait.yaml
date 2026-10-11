@@ -11,5 +11,3 @@ style:
     saturation: {orange: -3, yellow: -4, green: -5}
     luminance:  {orange: 3}
   sharpening: {amount: 35, radius: 1.0, detail: 20, masking: 15}
-exposure:
-  skin_weight: 0.65
