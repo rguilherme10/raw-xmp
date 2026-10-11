@@ -40,9 +40,10 @@ limits:
 
 exposure:
   target_median: 0.14               # target median luminance Y (linear, raw white = 1.0)
-  max_correction_stops: 2.0
+  max_correction_stops: 1.5
   damping: {normal: 0.85, underexposed: 0.95, low_key: 0.35, high_key: 0.35, high_contrast: 0.6}
-  highlight_recovery_stops: 0.6     # headroom the Highlights slider is trusted to recover
+  highlight_ceiling: 0.80           # brightening may push the bright subject (p99) up to this linear value, no further
+  highlight_recovery_stops: 0.15    # extra tolerance for the very top (p99.9) that Highlights can recover
   rounding: 0.05
   underexposed: {p999_max: 0.35, p50_ratio: 0.6}   # nothing near white AND dark median → plain under-exposure
   low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional

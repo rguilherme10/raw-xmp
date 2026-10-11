@@ -37,16 +37,20 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     if stats.key != "normal":
         parts.append(f"cena {stats.key} → correção atenuada ×{damp:.2f}")
 
-    # --- 4. protect highlights: brightening limited by headroom ---------------------------
+    # --- 4. protect highlights: never brighten past the point where the bright subject clips -----
+    # (a white shirt in a dark room: the median says "brighten", the highlights say "already full")
     conf = 0.85
+    p99 = max(stats.pct_y["p99"], 1e-4)
     p999 = max(stats.pct_y["p99.9"], 1e-4)
-    allowed_up = float(np.log2(1.0 / p999)) + ex["highlight_recovery_stops"]
+    allowed_up = min(float(np.log2(ex["highlight_ceiling"] / p99)),
+                     float(np.log2(0.99 / p999)) + ex["highlight_recovery_stops"])
     if stats.sensor_clip_fraction > 0.002 or stats.near_white_fraction > 0.01:
         allowed_up = min(allowed_up, 0.0)
         parts.append("highlights já cortados: sem aumento de exposição")
+    allowed_up = max(allowed_up, 0.0)
     if delta > allowed_up:
         delta, conf = allowed_up, conf - 0.15
-        parts.append(f"limitado pelo headroom dos highlights (+{allowed_up:.2f} EV)")
+        parts.append(f"limitado pelas altas luzes (p99 Y={p99:.2f} → máx. +{allowed_up:.2f} EV)")
     delta = clamp(delta, -ex["max_correction_stops"], ex["max_correction_stops"])
 
     delta += style_bias

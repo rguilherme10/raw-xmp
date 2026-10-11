@@ -23,8 +23,8 @@ contraste local (σ de V − gaussiana). **Chave da cena**:
 1. `Δ_global = log₂(alvo / mediana)`.
 2. Se há pele: `Δ_pele = log₂(Y_alvo_pele / Y_mediano_pele)`, mistura `(1−w)Δ_global + wΔ_pele`, `w = skin_weight·confiança`.
 3. Amortecimento pela chave (`normal .85, underexposed .95, low/high_key .35, high_contrast .6`).
-4. **Headroom**: aumento limitado por `log₂(1/p99,9) + 0,6 EV` (recuperável com Highlights); com clipping já existente, sem aumento.
-5. Teto ±2 EV, arredondamento 0,05, viés do estilo, clamp final.
+4. **Headroom**: aumento limitado para que o assunto claro (p99) não passe de `highlight_ceiling` (0,80 linear) e o topo (p99,9) de `0,99 + 0,15 EV`; com clipping já existente, sem aumento. (Evita clarear cena de fundo escuro cujo assunto branco já está bem exposto.)
+5. Teto ±1,5 EV (`max_correction_stops`), arredondamento 0,05, viés do estilo, clamp final.
 6. Previsões **pós-exposição** alimentam os demais controles:
    * **Highlights**: pressão = f(p99 acima do joelho 0,85, fração cortada) → 0…−60.
    * **Shadows**: p5 abaixo de V=0,12 → até +60 (atenuado em low-key; zero se a imagem já é "lavada").
