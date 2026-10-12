@@ -2,6 +2,6 @@
 # Put corrections measured for a specific body here (copy this file per model).
 match: ["Canon"]
 exposure:
-  target_median: 0.14               # raw-normalised middle-grey placement of Canon bodies (calibrate!)
+  target_median: 0.17               # raw-normalised middle-grey placement of Canon bodies (calibrate!)
 white_balance:
   kelvin_offset: 0.0

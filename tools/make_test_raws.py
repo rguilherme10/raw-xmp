@@ -202,7 +202,7 @@ def generate_set(out_dir: Path, ext: str = ".CR2", kinds=KINDS, w=480, h=320) ->
     for i, k in enumerate(kinds):
         rgb, meta = scene(k, w, h, seed=i)
         rng = np.random.default_rng(100 + i)
-        noise = 0.02 if meta["iso"] >= 3200 else 0.0015
+        noise = 0.06 if meta["iso"] >= 3200 else 0.0015
         bay = mosaic(rgb, neutral=neutral_for_cct(meta["data_cct"]), iso_noise=noise, rng=rng)
         p = out_dir / f"IMG_{i + 1:04d}_{k}{ext}"
         write_dng(p, bay, neutral=neutral_for_cct(meta["shot_cct"]), iso=meta["iso"])

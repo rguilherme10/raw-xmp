@@ -48,3 +48,11 @@ vir de WB sincronizado. O deslocamento de tint por imagem foi limitado a ±2. Pa
   (`consistency.exposure.enabled`, desligada por padrão): fotos da mesma pasta com mesma câmera/lente/ISO/abertura/obturador têm a estimativa puxada (70%) para a mediana do grupo; outliers (> 0,8 EV) ficam de fora.
   Simulação com agrupamento só por ISO: MAE 0,344 → 0,270 EV (todas) e 0,333 → 0,112 EV nas 23 sincronizadas. O `calibrate` agora imprime esse ganho com os ajustes de câmera reais.
   Para ligar numa sessão: coloque `consistency: {exposure: {enabled: true}}` no YAML do estilo.
+
+**57 pares (T6i, ISO 200, sessão externa) — rodada com XMPs realmente salvos** (substitui as conclusões do CSV anterior, que tinha valores desatualizados)
+* Exposição, fotos **com pele** (n=30): viés −0,04 EV, MAE 0,25 → calibrado (pele em Y mediana 0,179 após a sua edição).
+* Exposição, fotos **sem pele** (n=27): viés −0,30 EV → `exposure.target_median` 0,14 → **0,17** (Canon e default). Pior série: obturador 1/320 (n=15), humano +0,60 vs algoritmo +0,06 — a pele não é detectada nessas fotos (ver `skin-debug`).
+* **Redução de ruído:** o usuário aplica `LuminanceSmoothing` = 0 nas 57 fotos; o ruído medido varia 3,2–7,8 % (σ/S no tom de referência). `noise_free_relative` 0,02 → **0,08** (o cálculo antigo dava 9–27).
+  Sem variação humana não há como ajustar `noise_gain`: precisa de fotos com ISO alto onde você aplicou NR > 0.
+* Consistência de exposição em séries: **sem ganho real** (MAE 0,310 → 0,308 com 56/57 agrupadas); o ganho aparente do CSV anterior vinha de valores colados. Continua desligada.
+* Estilo: `ColorNoiseReduction` humano 25 (e 0 em duas), nitidez 35/58 — diferenças de ESTILO; gere o estilo da sessão com `make-style`.

@@ -39,7 +39,7 @@ limits:
   tone_curve_max_deviation: 14      # max |y-x| of any curve point (0..255 scale)
 
 exposure:
-  target_median: 0.14               # target median luminance Y (linear, raw white = 1.0)
+  target_median: 0.17               # median luminance Y when no person is detected (linear, raw white = 1.0); 0.14 was too dark by 0.30 EV on 27 real no-skin photos
   max_correction_stops: 2.5
   damping: {normal: 0.85, underexposed: 0.95, low_key: 0.35, high_key: 0.35, high_contrast: 0.6}
   highlight_ceiling: 0.80           # brightening may push the bright subject (p99) up to this linear value, no further
@@ -150,7 +150,7 @@ detail:
   push_weight: 0.8                  # fraction of a positive exposure push counted as extra ISO stops
   measure_noise: true               # measure noise on the RAW (green plane) instead of relying on ISO only
   noise_reference_y: 0.06           # output tone (linear) at which noise visibility is judged (dark mid-tones)
-  noise_free_relative: 0.02         # relative noise (sigma/S) below which no luminance NR is added
+  noise_free_relative: 0.08         # relative noise (sigma/S) below which no luminance NR is added. T6i ISO 200 +0.5..+2 EV measured 0.032–0.078 and the user applies LuminanceSmoothing 0 on all 57 photos
   noise_gain: 400                   # Luminance NR units per unit of relative noise above the free level — UNCALIBRATED, tune with `calibrate`
 
 lens:
