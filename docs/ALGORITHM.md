@@ -60,6 +60,13 @@ teto 0,85 sem rosto confirmado, **× penalidade se a área passa de 30 % do quad
 Pontos x = 0, 32, 64, 128, 192, 255. Curva do estilo + modulação: S-curve proporcional ao contraste estimado (±8 níveis), alívio de sombras esmagadas,
 roll-off de realces sob pressão de clipping, **inclinação 128→192 limitada a 0,9–1,2 com pele**, desvio máximo |y−x| ≤ 14, extremos ancorados, monotonia estrita (inclinação ≥ 0,35).
 
+## 8a. Ruído medido no RAW (`analysis/noise.py`)
+O ISO sozinho não prevê o ruído visível: empurrar +2 EV em ISO 800 traz as sombras (baixo SNR) para os tons médios. Medimos o ruído no plano verde do RAW (recorte central, sem demosaico):
+blocos 8×8, resíduo laplaciano (σ² = var/36), **os blocos mais planos por faixa de brilho** (textura não conta como ruído) e ajuste σ²(S) = a·S + b (ruído de disparo + leitura).
+Ruído relativo σ/S no nível do sensor que, após a exposição aplicada, cai no tom de referência (`detail.noise_reference_y`) → `LuminanceSmoothing = estilo + (σ/S − noise_free_relative)·noise_gain`.
+Nitidez, máscara e NR de cor usam o **ISO efetivo** (ISO + 0,8 × empurrão de exposição). Se o ruído não puder ser medido, volta à regra por ISO.
+Limites: (1) cena inteira texturizada (sem áreas planas) superestima o ruído; (2) `noise_gain`/`noise_free_relative` **não calibrados**: o `calibrate` agora compara LuminanceSmoothing/ColorNoiseReduction/Sharpness e grava `noise_rel` por foto para ajustá-los; (3) a remoção em si é do Lightroom — o XMP só informa quanto aplicar.
+
 ## 8. Detalhe e lente
 Nitidez −4/stop acima de ISO 400, máscara de bordas +10/stop; NR de luminância +9/stop, de cor +3/stop (limites configuráveis). Lente: `LensProfileEnable=1`, `LensProfileSetup=LensDefaults`, `AutoLateralCA=1`; perfil explícito via `lens.profiles`.
 

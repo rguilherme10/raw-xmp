@@ -11,6 +11,7 @@ from ..analysis.stats import ImageStats, compute_stats
 from ..color.hsl import BANDS, HSLResult, analyze_bands, estimate_hsl
 from ..colorspace import linear_to_lab, srgb_encode
 from ..config import Config
+from ..analysis.noise import estimate_noise_model
 from ..detail.detail import estimate_detail
 from ..exposure.estimator import estimate_exposure
 from ..lens.lens import lens_settings
@@ -96,10 +97,12 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
     bands = analyze_bands(sim, cfg)
     hsl = estimate_hsl(bands, skin, cfg)
     curve = build_curve(cfg, est, stats, skin)
-    det = estimate_detail(info.iso, cfg)
+    noise = estimate_noise_model(reader.green_plane()) if cfg.get("detail.measure_noise", True) else None
+    det = estimate_detail(info.iso, cfg, noise, est["exposure"].value)
     lens_params, lens_est = lens_settings(info.lens, cfg)
     est.update({f"detail_{k}": v for k, v in det.items()})
     est["lens"] = lens_est
+    est["noise_model"] = Estimate(noise.to_dict() if noise else None, 0.7 if noise and noise.valid else 0.0, "modelo de ruído σ²=a·S+b medido no plano verde do RAW")
 
     # global saturation / vibrance: style baseline + mild image-driven nudge from mean chroma
     lab = linear_to_lab(sim)

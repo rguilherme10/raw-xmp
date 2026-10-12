@@ -147,6 +147,11 @@ detail:
   edge_masking_per_stop: 10
   luminance_nr_per_stop: 9
   color_nr_per_stop: 3
+  push_weight: 0.8                  # fraction of a positive exposure push counted as extra ISO stops
+  measure_noise: true               # measure noise on the RAW (green plane) instead of relying on ISO only
+  noise_reference_y: 0.06           # output tone (linear) at which noise visibility is judged (dark mid-tones)
+  noise_free_relative: 0.02         # relative noise (sigma/S) below which no luminance NR is added
+  noise_gain: 400                   # Luminance NR units per unit of relative noise above the free level — UNCALIBRATED, tune with `calibrate`
 
 lens:
   enable_profile: true

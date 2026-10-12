@@ -170,6 +170,23 @@ class RawReader:
                 raise RawReadError(f"Falha ao desenvolver {self.path.name}: {exc}") from exc
         return rgb.astype(np.float32) / 65535.0
 
+    def green_plane(self, crop: int = 1600) -> np.ndarray | None:
+        """Central crop of one green Bayer plane, black-subtracted and normalised to 0..1 (for noise measurement)."""
+        try:
+            with self._open() as raw:
+                img = raw.raw_image_visible
+                pat = np.asarray(raw.raw_pattern)
+                gi, gj = [(i, j) for i in range(2) for j in range(2) if pat[i, j] in (1, 3)][0]
+                bl = float(np.mean(raw.black_level_per_channel))
+                white = float(raw.white_level)
+                plane = img[gi::2, gj::2].astype(np.float32)
+        except Exception:  # noqa: BLE001 — noise measurement is optional
+            return None
+        h, w = plane.shape
+        ch, cw = min(crop // 2, h), min(crop // 2, w)
+        t, l = (h - ch) // 2, (w - cw) // 2
+        return np.clip((plane[t:t + ch, l:l + cw] - bl) / max(white - bl, 1.0), 0, 1)
+
     def cache_key(self, max_dim: int) -> str:
         st = self.path.stat()
         h = hashlib.sha1(f"{self.path.resolve()}|{st.st_size}|{st.st_mtime_ns}|{max_dim}".encode())

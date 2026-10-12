@@ -20,7 +20,7 @@ from ..xmp.schema import SPECS
 from ..pipeline.discovery import find_raws
 
 COMPARE = ["Exposure2012", "Contrast2012", "Highlights2012", "Shadows2012", "Whites2012", "Blacks2012",
-           "Vibrance", "Saturation", "Temperature", "Tint"]
+           "Vibrance", "Saturation", "Temperature", "Tint", "LuminanceSmoothing", "ColorNoiseReduction", "Sharpness"]
 FEATURES = ["p0.1", "p1", "p5", "p50", "p95", "p99", "p99.9"]
 
 
@@ -49,6 +49,7 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
         w_skin = ex_cfg["skin_weight"] * min(1.0, dec.skin.confidence / ex_cfg["skin_full_confidence"]) if dec.skin.detected else 0.0
         row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
                "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
+               "noise_rel": (dec.estimates.get("detail_noise_relative").value if dec.estimates.get("detail_noise_relative") else None),
                "aperture": dec.info.aperture, "shutter": dec.info.shutter, "lens": dec.info.lens, "dir": str(raw.parent)}
         for k in COMPARE:
             mine = dec.params.get(k)
