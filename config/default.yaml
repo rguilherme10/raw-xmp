@@ -49,7 +49,7 @@ exposure:
   low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional
   high_key: {p5_min: 0.12, p50_min: 0.35}
   high_contrast_stops: 10.5         # log2(p99/p1) above which scene counts as high-contrast
-  skin_target_y: 0.12               # desired skin luminance (linear Y). Measured on 10 human edits: median 0.12 (0.095–0.161, one outlier 0.25)
+  skin_target_y: 0.15               # desired skin luminance (linear Y). Session-dependent: 0.124 (10 indoor photos), 0.179 (25 outdoor); 0.15 = compromise → calibrate per style
   skin_weight: 0.9                  # max weight of the skin-based exposure estimate (people are the subject)
   skin_led_damping: 1.0             # no attenuation when skin drives the exposure (human/predicted ratio ≈ 1.0)
   skin_led_median_ceiling: 0.45     # when skin-led, brightening may take the frame's median up to this, no further
@@ -154,6 +154,11 @@ lens:
   profiles: {}                      # "lens model": {name: "...", filename: "..."} optional exact LR profile
 
 consistency:
+  exposure:
+    enabled: false                  # opt-in: same camera settings + similar estimates in one folder → one shared exposure
+    tolerance_ev: 0.8               # estimates farther than this from the group median are left alone (other light)
+    max_pull: 0.7                   # fraction of the distance to the median that is applied
+    min_group: 3
   enabled: true
   scope: folder                     # folder | all
   kelvin_tolerance: 1500            # only group shots whose as-shot Kelvin is within this of the group median

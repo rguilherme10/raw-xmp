@@ -21,7 +21,7 @@ from ..validation.xmp_validator import validate_model
 from ..xmp.builder import build_model
 from ..xmp.parser import parse_xmp
 from ..xmp.serializer import XMPSerializer
-from .consistency import apply_consistency
+from .consistency import apply_consistency, apply_exposure_consistency
 from .discovery import existing_sidecar, find_raws, sidecar_path
 
 
@@ -186,7 +186,7 @@ def run_batch(opts: Options) -> list[FileResult]:
                 packets.append(pk)
     packets.sort(key=lambda p: p["path"])
 
-    for note in apply_consistency(packets, cfg):
+    for note in apply_consistency(packets, cfg) + apply_exposure_consistency(packets, cfg):
         LOGGER.info(note)
 
     rep_root = Path(opts.report_dir) if opts.report_dir else (None if writing else Path("output") / "reports")

@@ -8,6 +8,7 @@ from rawxmp.pipeline.batch import Options, run_batch
 from rawxmp.preview.compare import make_comparison
 from rawxmp.preview.simulate import default_render, simulate
 import numpy as np
+import pytest
 
 
 def test_calibration_against_own_output_has_zero_bias(work_dir, tmp_path):
@@ -75,3 +76,40 @@ def test_synced_preset_is_detected_and_not_used_for_calibration(work_dir, tmp_pa
     assert s["parameters"]["Exposure2012"]["synced_preset"] is True
     assert any("Exposure2012" in w and "preset" in w for w in s["warnings"])
     assert "exposure.target_median" not in s["suggestions"]
+
+
+def test_exposure_consistency_pulls_series_with_same_settings_only():
+    from rawxmp.pipeline.consistency import consistent_exposures
+    cc = {"tolerance_ev": 0.8, "max_pull": 0.7, "min_group": 3}
+    meta = {"camera": "C", "lens": "L", "iso": 200, "aperture": 2.8, "shutter": 1 / 200}
+    mk = lambda n, e, **kw: {"path": f"/s/{n}.CR2", "exposure": e, "meta": {**meta, **kw}}
+    items = [mk("a", -0.5), mk("b", 0.0), mk("c", 0.6), mk("d", 2.0),                 # d: outlier (other light) left alone
+             mk("e", 1.0, iso=800), mk("f", -1.0, iso=800)]                          # other ISO group has only 2 frames
+    out = consistent_exposures(items, cc)
+    assert out["/s/a.CR2"] > -0.5 and out["/s/c.CR2"] < 0.6                        # pulled toward the median
+    assert out["/s/d.CR2"] == 2.0 and "/s/e.CR2" not in out and "/s/f.CR2" not in out
+    spread = lambda ks: max(out[k] for k in ks) - min(out[k] for k in ks)
+    assert spread(["/s/a.CR2", "/s/b.CR2", "/s/c.CR2"]) < 1.1 * 0.5
+
+
+def test_consistency_is_off_by_default_and_used_when_enabled(work_dir):
+    import rawxmp.config as C
+    from rawxmp.config import load_config
+    assert load_config().get("consistency.exposure.enabled") is False
+    off = run_batch(Options(path=str(work_dir), workers=1, write_reports=False))
+    assert all(r.status == "written" for r in off)
+
+
+def test_calibrate_reports_consistency_and_writes_style(work_dir, tmp_path):
+    from rawxmp.calibration.calibrate import write_to_style
+    cfg = load_config()
+    run_batch(Options(path=str(work_dir), workers=1, write_reports=False))
+    s = calibrate(work_dir, cfg, out_dir=tmp_path / "cal")
+    assert "exposure_consistency" in s and s["exposure_consistency"]["n"] == 9
+    dest = write_to_style("sessao-x", {"exposure.skin_target_y": 0.18}, tmp_path)
+    import yaml
+    assert yaml.safe_load(dest.read_text(encoding="utf-8")) == {"exposure": {"skin_target_y": 0.18}}
+    dest = write_to_style("sessao-x", {"exposure.target_median": 0.12}, tmp_path)           # merges, keeps previous key
+    assert yaml.safe_load(dest.read_text(encoding="utf-8"))["exposure"] == {"skin_target_y": 0.18, "target_median": 0.12}
+    with pytest.raises(ValueError):
+        write_to_style("sessao-x", {}, tmp_path)

@@ -58,3 +58,54 @@ def apply_consistency(packets: list[dict], cfg: Config) -> list[str]:
                 p["params"].pop("Tint", None)
             notes.append(f"{Path(p['path']).name}: {msg}")
     return notes
+
+
+def _settings_key(meta: dict):
+    """Camera settings that define 'the same exposure': body, lens, ISO, aperture and shutter (1/3-stop buckets)."""
+    import math
+    ap, sh, iso = meta.get("aperture"), meta.get("shutter"), meta.get("iso")
+    if not ap or not sh or not iso:
+        return None
+    return (meta.get("camera"), meta.get("lens"), iso, round(math.log2(ap) * 6), round(math.log2(sh) * 3))
+
+
+def consistent_exposures(items: list[dict], cc: dict) -> dict[str, float]:
+    """items: [{path, meta, exposure}] -> {path: shared exposure}.  Pure function (used by batch and calibrate).
+
+    Frames shot with identical settings in the same folder differ in brightness mainly because of subject/background,
+    not because the exposure should differ.  Estimates within ``tolerance_ev`` of the group median are pulled toward it.
+    """
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+    for it in items:
+        k = _settings_key(it["meta"])
+        if k is not None:
+            groups[(str(Path(it["path"]).parent), k)].append(it)
+    out: dict[str, float] = {}
+    for g in groups.values():
+        if len(g) < cc.get("min_group", 3):
+            continue
+        med = statistics.median(i["exposure"] for i in g)
+        for i in g:
+            e = i["exposure"]
+            if abs(e - med) <= cc.get("tolerance_ev", 0.8):
+                e = e + cc.get("max_pull", 0.7) * (med - e)
+            out[i["path"]] = round(round(e / 0.05) * 0.05, 3)
+    return out
+
+
+def apply_exposure_consistency(packets: list[dict], cfg: Config) -> list[str]:
+    cc = cfg.section("consistency").get("exposure", {})
+    if not cc.get("enabled", False):
+        return []
+    ok = [p for p in packets if p.get("status") == "analyzed"]
+    new = consistent_exposures([{"path": p["path"], "meta": p["report"]["metadata"],
+                                 "exposure": p["params"]["Exposure2012"]} for p in ok], cc)
+    lo, hi = cfg.limit("exposure")
+    notes = []
+    for p in ok:
+        if p["path"] in new and abs(new[p["path"]] - p["params"]["Exposure2012"]) >= 0.05:
+            v = min(max(new[p["path"]], lo), hi)
+            notes.append(f"{Path(p['path']).name}: consistência de exposição {p['params']['Exposure2012']:+.2f} → {v:+.2f}")
+            p["params"]["Exposure2012"] = v
+            p["report"].setdefault("consistency", []).append(notes[-1])
+    return notes

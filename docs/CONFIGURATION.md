@@ -15,6 +15,7 @@ Camadas (a seguinte sobrescreve a anterior, dicionários são mesclados em profu
 | `skin` | limiares YCrCb/HSV/Lab, áreas, teto de confiança, `face_cascade` |
 | `color` | centros das faixas, `sat_high`, zona morta de matiz, ajustes máximos, proteção de pele |
 | `tone_curve` | pontos x, ganhos, inclinação permitida na faixa da pele |
+| `consistency.exposure` | `enabled` (padrão false), `tolerance_ev`, `max_pull`, `min_group` — exposição compartilhada em séries com os mesmos ajustes de câmera |
 | `detail`, `lens`, `consistency`, `report`, `xmp` | ISO-adaptação, perfil de lente, consistência de lote, versão escrita no XMP |
 
 ## Exemplo — o do enunciado

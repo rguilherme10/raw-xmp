@@ -39,3 +39,12 @@ Descoberta: nas 4 fotos a pele fica em Y linear = 0,095–0,136 após a sua expo
 teto de correção 2,5 EV. Quando a pele é o assunto, **a trava de realces não vale** (fotos com p99 de 0,93–0,98 receberam +0,6…+1,3 EV e Realces −54…−100); sem amortecimento. IMG_3004 (você expôs pelo rosto, fundo estourado, Realces −67): o detector marcava também piso bege e parede como pele (matiz Lab 63–67, Y 0,34–0,75) e media Y=0,17; os componentes de rosto/mãos têm matiz 40–53. Agora os componentes são ponderados por matiz (`skin.hue_prefer`: acima de 60 perdem peso), o erro nessa foto caiu de −1,06 para −0,61 EV e o MAE geral ficou em 0,29 EV. **Amostra pequena (4 fotos, uma sessão)**: reavalie com mais pares.
 Balanço de branco: **não calibrado** — suas Temperature/Tint (4058–4910 K, tint −3…−6) diferem do as-shot calculado (5155–5560 K, tint +1…+2) e parecem
 vir de WB sincronizado. O deslocamento de tint por imagem foi limitado a ±2. Para calibrar `white_balance.kelvin_offset` informe o Temperature/Tint que o Lightroom mostra em "As Shot" para uma foto.
+
+**61 pares (T6i, sessão externa, ISO 200)** — análise de `calibration_rows.csv`
+* Fotos sem pele (n=13 editadas individualmente): erro médio 0,14 EV.
+* Fotos com pele (n=25): a pele fica em Y mediana **0,179** (IQR 0,165–0,192) após a sua exposição — contra 0,124 na sessão interna anterior. O alvo de pele **depende da sessão**:
+  default global 0,15 (compromisso); para cada sessão rode `python main.py calibrate PASTA --style SESSAO --write-style SESSAO` (grava `exposure.skin_target_y`/`target_median` no YAML do estilo, só com ≥ 5 amostras individuais por grupo).
+* 23 das 61 fotos têm a mesma exposição (+0,23): série com mesmos ajustes de câmera. O algoritmo variava −0,55…+0,65 nelas. Consistência de exposição em séries
+  (`consistency.exposure.enabled`, desligada por padrão): fotos da mesma pasta com mesma câmera/lente/ISO/abertura/obturador têm a estimativa puxada (70%) para a mediana do grupo; outliers (> 0,8 EV) ficam de fora.
+  Simulação com agrupamento só por ISO: MAE 0,344 → 0,270 EV (todas) e 0,333 → 0,112 EV nas 23 sincronizadas. O `calibrate` agora imprime esse ganho com os ajustes de câmera reais.
+  Para ligar numa sessão: coloque `consistency: {exposure: {enabled: true}}` no YAML do estilo.

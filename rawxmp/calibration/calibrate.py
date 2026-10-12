@@ -48,7 +48,8 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
         ex_cfg = cfg.section("exposure")
         w_skin = ex_cfg["skin_weight"] * min(1.0, dec.skin.confidence / ex_cfg["skin_full_confidence"]) if dec.skin.detected else 0.0
         row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
-               "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key}
+               "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
+               "aperture": dec.info.aperture, "shutter": dec.info.shutter, "lens": dec.info.lens, "dir": str(raw.parent)}
         for k in COMPARE:
             mine = dec.params.get(k)
             if k in ("Temperature", "Tint") and mine is None:       # computed As Shot → no absolute value
@@ -127,6 +128,21 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
                 notes.append(f"{param}: só {len(v)} amostra(s) ({'com' if key == 'skin_led' else 'sem'} pele); precisa de ≥ 5")
         summary["suggestions"]["note"] = ("Viés das fotos COM pele → exposure.skin_target_y; SEM pele → exposure.target_median "
                                           "(preferencialmente em profiles/cameras/*.yaml). " + "; ".join(notes))
+    # Would sharing one exposure inside a series (same camera settings) have matched the human better?
+    from ..pipeline.consistency import consistent_exposures
+    cc = dict(cfg.section("consistency").get("exposure", {}))
+    items = [{"path": str(Path(r["dir"]) / r["file"]), "exposure": r["Exposure2012_algo"],
+              "meta": {"camera": r["camera"], "lens": r["lens"], "iso": r["iso"], "aperture": r["aperture"], "shutter": r["shutter"]}}
+             for r in rows if r.get("Exposure2012_algo") is not None]
+    shared = consistent_exposures(items, cc)
+    pairs_all = [(r["Exposure2012_algo"], shared.get(str(Path(r["dir"]) / r["file"]), r["Exposure2012_algo"]), r["Exposure2012_human"])
+                 for r in rows if r.get("Exposure2012_algo") is not None and r.get("Exposure2012_human") is not None]
+    if pairs_all:
+        summary["exposure_consistency"] = {
+            "n": len(pairs_all), "grouped": sum(1 for r in rows if str(Path(r["dir"]) / r["file"]) in shared),
+            "mae_without": round(sum(abs(a - h) for a, _, h in pairs_all) / len(pairs_all), 3),
+            "mae_with": round(sum(abs(b - h) for _, b, h in pairs_all) / len(pairs_all), 3),
+            "note": "todas as fotos, inclusive as de exposição repetida (a sincronização faz parte do que se quer reproduzir)"}
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / "calibration_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -158,3 +174,27 @@ def _corr(a, b):
     if va <= 0 or vb <= 0:
         return None
     return round(sum((x - ma) * (y - mb) for x, y in zip(a, b)) / math.sqrt(va * vb), 3)
+
+
+def write_to_style(name: str, suggestions: dict, profiles_dir: Path | None = None) -> Path:
+    """Merge accepted exposure suggestions into profiles/styles/<name>.yaml (created if missing)."""
+    import re
+    import yaml
+    from ..config import ROOT
+    if not re.fullmatch(r"[A-Za-z0-9_\-]+", name):
+        raise ValueError("nome de estilo inválido")
+    dest = (profiles_dir or ROOT / "profiles") / "styles" / f"{name}.yaml"
+    doc = yaml.safe_load(dest.read_text(encoding="utf-8")) if dest.exists() else {}
+    doc = doc or {}
+    ex = doc.setdefault("exposure", {})
+    changed = {}
+    for k in ("skin_target_y", "target_median"):
+        v = suggestions.get(f"exposure.{k}")
+        if v is not None:
+            ex[k] = v
+            changed[k] = v
+    if not changed:
+        raise ValueError("nenhuma sugestão de exposição disponível (precisa de ≥ 5 amostras individuais por grupo)")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    return dest

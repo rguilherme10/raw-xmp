@@ -119,6 +119,14 @@ def cmd_calibrate(a) -> int:
     if s.get("exposure_groups"):
         g = s["exposure_groups"]
         print("Exposição por tipo de foto:", ", ".join(f"{k}: n={v['n']} viés {v['bias']} MAE {v['mae']}" for k, v in g.items()))
+    if s.get("exposure_consistency"):
+        c = s["exposure_consistency"]
+        print(f"Consistência de exposição em séries (mesmos ajustes de câmera): {c['grouped']}/{c['n']} fotos agrupadas, "
+              f"MAE {c['mae_without']} → {c['mae_with']} EV  (ative com consistency.exposure.enabled: true)")
+    if getattr(a, "write_style", None):
+        from ..calibration.calibrate import write_to_style
+        dest = write_to_style(a.write_style, s["suggestions"])
+        LOGGER.info(f"Alvos de exposição gravados em {dest}")
     if not a.style:
         LOGGER.warning("Sem --style: Contraste/Realces/Sombras/Brancos/Pretos/Vibrance são comparados com o estilo BASE, não com o look "
                        "das suas fotos. Gere um estilo com `make-style` e passe --style para comparar de forma justa.")
@@ -232,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("calibrate", help="compara a análise com XMPs humanos (pares NOME.CR2 + NOME.xmp)")
     p.add_argument("path")
     p.add_argument("--out", default="output/calibration")
+    p.add_argument("--write-style", metavar="NOME", help="grava os alvos de exposição sugeridos em profiles/styles/NOME.yaml")
     p.add_argument("--style"), p.add_argument("--config")
     p.add_argument("--recursive", "-r", action="store_true")
     p.add_argument("-v", "--verbose", action="store_true"), p.add_argument("-q", "--quiet", action="store_true")
