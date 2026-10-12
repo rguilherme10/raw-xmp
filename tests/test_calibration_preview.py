@@ -19,7 +19,10 @@ def test_calibration_against_own_output_has_zero_bias(work_dir, tmp_path):
     assert ex["bias"] == 0 and ex["mae"] == 0 and ex["n"] == 9
     assert (tmp_path / "cal" / "calibration_summary.json").exists()
     assert (tmp_path / "cal" / "calibration_features.csv").exists()
-    assert s["suggestions"]["exposure.target_median"] == cfg.get("exposure.target_median")
+    assert "exposure_groups" in s and set(s["exposure_groups"]) == {"skin_led", "no_skin"}
+    for k in ("exposure.skin_target_y", "exposure.target_median"):          # unbiased -> suggestion equals the current value
+        if k in s["suggestions"]:
+            assert s["suggestions"][k] == cfg.get(k)
 
 
 def test_calibration_detects_systematic_bias(work_dir, tmp_path):
@@ -33,7 +36,8 @@ def test_calibration_detects_systematic_bias(work_dir, tmp_path):
         x.write_text(t, encoding="utf-8")
     s = calibrate(work_dir, cfg, out_dir=tmp_path / "cal")
     assert abs(s["parameters"]["Exposure2012"]["bias"] + 0.5) < 0.02
-    assert s["suggestions"]["exposure.target_median"] > cfg.get("exposure.target_median")   # human = brighter → raise target
+    assert s["suggestions"].get("exposure.skin_target_y", 1) > cfg.get("exposure.skin_target_y") or \
+        s["suggestions"].get("exposure.target_median", 1) > cfg.get("exposure.target_median")   # human = brighter → raise a target
 
 
 def test_calibration_skips_raw_without_xmp(work_dir, tmp_path):

@@ -45,7 +45,10 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
         except Exception as exc:  # noqa: BLE001
             LOGGER.error(f"{raw.name}: {exc}")
             continue
-        row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso}
+        ex_cfg = cfg.section("exposure")
+        w_skin = ex_cfg["skin_weight"] * min(1.0, dec.skin.confidence / ex_cfg["skin_full_confidence"]) if dec.skin.detected else 0.0
+        row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
+               "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key}
         for k in COMPARE:
             mine = dec.params.get(k)
             if k in ("Temperature", "Tint") and mine is None:       # computed As Shot → no absolute value
@@ -98,17 +101,32 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
                 "parece preset sincronizado (copiar/colar); essas amostras foram EXCLUÍDAS da calibração "
                 f"(restam {e['n']})")
     ex = summary["parameters"].get("Exposure2012")
-    if ex and ex["n"] == 0:
-        summary["suggestions"]["note"] = ("Exposição idêntica em todas as fotos: sem informação para calibrar. "
-                                          "Use pares em que a exposição foi ajustada foto a foto.")
-    elif ex and (ex["human_distinct_values"] < 3 or ex["n"] < 5):
-        summary["suggestions"]["note"] = (f"Só {ex['n']} amostra(s) de exposição individual ({ex['human_distinct_values']} valores "
-                                          "distintos): precisa de ≥ 5 pares editados foto a foto para sugerir um novo alvo.")
+    if ex and (ex["n"] == 0 or ex["human_distinct_values"] < 3):
+        summary["suggestions"]["note"] = ("Exposição sem variação individual suficiente (repetida/preset): "
+                                          "use pares editados foto a foto.")
     elif ex:
-        t = cfg.get("exposure.target_median")
-        summary["suggestions"]["exposure.target_median"] = round(t * 2 ** (-ex["bias"]), 4)
-        summary["suggestions"]["note"] = ("O viés de exposição é absorvido em exposure.target_median "
-                                          "(preferencialmente por câmera em profiles/cameras/*.yaml).")
+        # Exposure is skin-led when a person is detected: that bias belongs to exposure.skin_target_y, the rest to target_median.
+        human_exp = Counter(round(r["Exposure2012_human"], 3) for r in rows if r.get("Exposure2012_human") is not None)
+        preset_v = human_exp.most_common(1)[0][0] if human_exp and human_exp.most_common(1)[0][1] >= 3 and \
+            human_exp.most_common(1)[0][1] / max(sum(human_exp.values()), 1) >= 0.4 else None
+        groups = {"skin_led": [], "no_skin": []}
+        for r in rows:
+            h, a = r.get("Exposure2012_human"), r.get("Exposure2012_algo")
+            if h is None or a is None or (preset_v is not None and round(h, 3) == preset_v):
+                continue
+            groups["skin_led" if r["skin_led"] else "no_skin"].append(a - h)
+        summary["exposure_groups"] = {k: {"n": len(v), "bias": round(sum(v) / len(v), 3) if v else None,
+                                          "mae": round(sum(abs(x) for x in v) / len(v), 3) if v else None}
+                                      for k, v in groups.items()}
+        notes = []
+        for key, param in (("skin_led", "exposure.skin_target_y"), ("no_skin", "exposure.target_median")):
+            v = groups[key]
+            if len(v) >= 5:
+                summary["suggestions"][param] = round(cfg.get(param) * 2 ** (-sum(v) / len(v)), 4)
+            else:
+                notes.append(f"{param}: só {len(v)} amostra(s) ({'com' if key == 'skin_led' else 'sem'} pele); precisa de ≥ 5")
+        summary["suggestions"]["note"] = ("Viés das fotos COM pele → exposure.skin_target_y; SEM pele → exposure.target_median "
+                                          "(preferencialmente em profiles/cameras/*.yaml). " + "; ".join(notes))
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / "calibration_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
