@@ -210,6 +210,25 @@ def generate_set(out_dir: Path, ext: str = ".CR2", kinds=KINDS, w=480, h=320) ->
     return paths
 
 
+def generate_jpeg_set(out_dir: Path, kinds=KINDS, w=480, h=320) -> list[Path]:
+    """Camera-like JPEGs (sRGB, Exif with make/model/ISO/aperture/shutter) of the same synthetic scenes."""
+    from PIL import Image
+    out_dir.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for i, k in enumerate(kinds):
+        rgb, meta = scene(k, w, h, seed=i)
+        enc = np.where(rgb <= 0.0031308, 12.92 * rgb, 1.055 * np.power(np.clip(rgb, 1e-9, 1), 1 / 2.4) - 0.055)
+        img = Image.fromarray((np.clip(enc, 0, 1) * 255 + 0.5).astype("uint8"))
+        ex = Image.Exif()
+        ex[0x010F], ex[0x0110] = "Canon", "Canon EOS SYNTH"
+        ifd = ex.get_ifd(0x8769)
+        ifd[0x8827], ifd[0x829D], ifd[0x829A], ifd[0x920A] = meta["iso"], 2.8, 0.005, 50.0
+        p = out_dir / f"IMG_{i + 1:04d}_{k}.JPG"
+        img.save(p, "JPEG", quality=92, exif=ex)
+        paths.append(p)
+    return paths
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("out_dir", type=Path)

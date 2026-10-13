@@ -20,3 +20,5 @@ e o **lote/CLI** entrou na Fase 1 (sem ele não se mede nada em dezenas de fotos
 5. Perfis de lente: mapear em `lens.profiles` os nomes exatos dos `.lcp` usados.
 6. Equalização de exposição entre fotos *da mesma cena* (rajadas), análogo à consistência de WB.
 7. Ruído medido na imagem (não só ISO) para NR; máscaras locais (Gradiente/Radial) fora de escopo.
+
+- Calibrar o caminho JPEG com pares JPG + JPG editado no Lightroom; validar a abertura no Lightroom/ACR.

@@ -51,6 +51,10 @@ def _decode(endian: str, typ: int, count: int, data: bytes):
             v = struct.unpack(endian + fmt * count, data)
             r = [(v[i] / v[i + 1]) if v[i + 1] else 0.0 for i in range(0, len(v), 2)]
             return r[0] if count == 1 else r
+        if typ in (11, 12):
+            fmt = "f" if typ == 11 else "d"
+            v = struct.unpack(endian + fmt * count, data)
+            return v[0] if count == 1 else v
         if typ == 1:
             return data[0] if count == 1 else data
     except struct.error:
@@ -61,6 +65,12 @@ def _decode(endian: str, typ: int, count: int, data: bytes):
 def parse_tiff_exif(path: Path) -> dict:
     """Return normalised metadata from IFD0 + Exif IFD of a TIFF-based raw file."""
     with open(path, "rb") as fh:
+        return parse_exif_stream(fh)
+
+
+def parse_exif_stream(fh) -> dict:
+    """Same, from any seekable binary stream positioned at a TIFF header (also the Exif payload of a JPEG)."""
+    if True:
         head = fh.read(8)
         if head[:2] == b"II":
             endian = "<"
@@ -87,6 +97,16 @@ def parse_tiff_exif(path: Path) -> dict:
         "aperture": exif.get(33437), "shutter": exif.get(33434),
         "focal_length": exif.get(37386), "lens": exif.get(42036) or None,
     }
+
+
+def parse_jpeg_exif(path: Path) -> dict:
+    """Metadata of a camera JPEG (Exif APP1 → TIFF structure)."""
+    import io
+    from .jpeg import extract_exif_tiff
+    blob = extract_exif_tiff(path)
+    if not blob:
+        raise ValueError("JPEG sem Exif")
+    return parse_exif_stream(io.BytesIO(blob))
 
 
 def exiftool_metadata(path: Path) -> dict | None:

@@ -1,0 +1,24 @@
+# Overlay applied ONLY to camera JPEGs.  Everything here is UNCALIBRATED: a JPEG is already tone-mapped and white-balanced
+# by the camera, so the RAW-calibrated targets (skin level, p99 anchor, noise model) do not transfer.  Conservative on purpose.
+exposure:
+  target_median: 0.18               # JPEG tone curves put mid-grey higher than raw-linear
+  skin_target_y: 0.22
+  max_correction_stops: 1.0
+  highlight_ceiling: 0.92           # 255 is a hard ceiling in a JPEG
+  highlight_anchor: {enabled: false}
+  estimate_gain: {contrast: 0.5, highlights: 0.7, shadows: 0.7, whites: 0.5, blacks: 0.5}
+limits:
+  exposure: {min: -1.5, max: 1.5}
+  temperature: {min: -100, max: 100}
+detail:
+  measure_noise: false              # no raw plane; camera NR already applied
+  luminance_nr_per_stop: 0
+  color_nr_per_stop: 0
+  sharpness_drop_per_stop: 0        # in-camera sharpening already present
+  edge_masking_per_stop: 0
+lens:
+  enable_profile: false             # camera JPEGs are corrected in-camera (when enabled)
+white_balance:
+  jpeg_write: false                 # Temperature/Tint of a JPEG are a relative scale in Camera Raw: not written (As Shot kept)
+analysis:
+  noise_floor: 0.003

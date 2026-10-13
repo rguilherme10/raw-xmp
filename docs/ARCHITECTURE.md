@@ -76,3 +76,8 @@ por imagem *depois* e aplica `limits.*`. Testado: campos de estilo (perfil, clar
 5. **Perfil de lente**: só habilitamos a correção automática (`LensProfileEnable`); nomes exatos de perfil vêm de `lens.profiles` se você os mapear.
 6. **Prévia `compare`** é aproximação, não o motor da Adobe.
 7. Consistência entre fotos hoje cobre **WB**; exposição entre cenas diferentes não é equalizada de propósito.
+
+## Caminho JPEG
+
+`rawxmp/raw/jpeg.py` extrai Exif/XMP, renderiza linear (ICC→sRGB) e grava o XMP no APP1 por cópia
+byte-a-byte do restante (`embed_xmp`, atômico). `analyze_raw` ramifica por tipo (`Decision.kind`).

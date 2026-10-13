@@ -68,3 +68,9 @@ python main.py process D:\ENSAIO --style meu_estilo
 * Contraste/Realces/Sombras/Brancos/Pretos viram `*_bias`: o valor final é *o que o algoritmo mede na foto + seu nível habitual*.
 * `--with-template` copia o 1º XMP para `profiles/templates/NOME.xmp` e o usa como estrutura: preserva `Look`, crop e o formato de elementos; `Temperature/Tint` não são herdados.
 * O arquivo gerado (`profiles/styles/meu_estilo.yaml`) é texto: edite à vontade.
+
+## JPEG (`--jpeg`, `--jpeg-with-raw`)
+
+Opções comuns. Saída: cópia com XMP embutido em `<pasta>/rawxmp_jpeg/` (ou `--output-dir`); respeita
+`--overwrite`/`--backup`/`--dry-run`. `validate` também lê o XMP embutido de `.jpg`. `calibrate --jpeg`
+usa JPEGs com ajustes do Lightroom embutidos como referência humana.

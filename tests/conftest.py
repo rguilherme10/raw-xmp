@@ -19,6 +19,21 @@ def raw_set(tmp_path_factory) -> dict:
     return {p.stem.split("_", 2)[2]: p for p in paths}
 
 
+@pytest.fixture(scope="session")
+def jpeg_set(tmp_path_factory) -> dict:
+    d = tmp_path_factory.mktemp("jpegs")
+    return {p.stem.split("_", 2)[2]: p for p in gen.generate_jpeg_set(d)}
+
+
+@pytest.fixture()
+def jpeg_dir(tmp_path, jpeg_set):
+    d = tmp_path / "jpgs"
+    d.mkdir()
+    for p in jpeg_set.values():
+        shutil.copy(p, d / p.name)
+    return d
+
+
 @pytest.fixture()
 def work_dir(tmp_path, raw_set):
     """Fresh copy of the RAW set that tests may write next to."""

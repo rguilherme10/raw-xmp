@@ -10,12 +10,15 @@ from .detector import SkinResult, detect_skin
 
 def neutral_correction_matrix(lin: np.ndarray, info: RawInfo, cfg) -> np.ndarray | None:
     """Full-strength linear-sRGB matrix that makes the photo's own neutral surfaces neutral (None if no evidence)."""
-    if info.xyz_to_cam is None:
-        return None
     w = cfg.section("white_balance")
     mask, _ = find_neutral_candidates(lin, cfg, None)
     if mask.mean() < w["min_candidate_fraction"]:
         return None
+    if info.xyz_to_cam is None:                       # JPEG: no camera space, neutralise directly in linear sRGB
+        mean = lin[mask].mean(0)
+        lo, hi = cfg.get("skin.retry_gain_range", [0.6, 1.8])
+        g = np.clip(mean[1] / np.maximum(mean, 1e-6), lo, hi)
+        return np.diag(g / g[1])
     xyz_to_cam = np.asarray(info.xyz_to_cam)
     mean_cam = srgb_to_camera_matrix(xyz_to_cam) @ lin[mask].mean(0)
     ratio = mean_cam / max(mean_cam[1], 1e-6)

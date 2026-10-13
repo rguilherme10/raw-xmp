@@ -22,7 +22,8 @@ from ..xmp.builder import build_model
 from ..xmp.parser import parse_xmp
 from ..xmp.serializer import XMPSerializer
 from .consistency import apply_consistency, apply_exposure_consistency
-from .discovery import existing_sidecar, find_raws, sidecar_path
+from ..raw.jpeg import JPEG_EXTENSIONS, JpegError, embed_xmp, extract_xmp, is_jpeg
+from .discovery import existing_sidecar, find_raws, jpeg_out_path, sidecar_path
 
 
 @dataclass
@@ -42,6 +43,8 @@ class Options:
     template: str | None = None
     reference: str | None = None
     write_reports: bool = True
+    jpeg: bool = False                     # also process camera JPEGs (XMP embedded in a COPY)
+    jpeg_with_raw: bool = False            # ... even when a RAW with the same name exists in the same folder
 
 
 @dataclass
@@ -97,7 +100,7 @@ def analyze_worker(path: str, style: str | None, config_path: str | None, cache_
                    "as_shot_kelvin": wb.as_shot_temperature, "as_shot_tint": wb.as_shot_tint, "mode": wb.mode},
             "lines": _log_lines(dec), "seconds": time.perf_counter() - t0,
         }
-    except RawReadError as exc:
+    except (RawReadError, JpegError) as exc:
         return {"status": "error", "path": path, "lines": [("ERROR", str(exc))]}
     except Exception as exc:  # noqa: BLE001 — a single bad file must never stop the batch
         return {"status": "error", "path": path,
@@ -125,9 +128,16 @@ def run_batch(opts: Options) -> list[FileResult]:
     if not root.exists():
         LOGGER.error(f"Caminho não encontrado: {root}")
         return []
-    files = find_raws(root, opts.recursive, cfg.get("files.raw_extensions", [".cr2"]))
+    raw_exts = cfg.get("files.raw_extensions", [".cr2"])
+    files = find_raws(root, opts.recursive, list(raw_exts) + (list(JPEG_EXTENSIONS) if opts.jpeg else []))
+    if opts.jpeg and not opts.jpeg_with_raw:
+        raw_keys = {(f.parent, f.stem.lower()) for f in files if f.suffix.lower() in {e.lower() for e in raw_exts}}
+        dup = [f for f in files if is_jpeg(f) and (f.parent, f.stem.lower()) in raw_keys]
+        if dup:
+            LOGGER.info(f"{len(dup)} JPEG(s) ignorados: já existe um RAW com o mesmo nome (use --jpeg-with-raw para incluí-los)")
+            files = [f for f in files if f not in dup]
     if not files:
-        LOGGER.warning(f"Nenhum arquivo RAW encontrado em {root}" + ("" if opts.recursive else " (use --recursive para subpastas)"))
+        LOGGER.warning(f"Nenhum arquivo RAW{'/JPEG' if opts.jpeg else ''} encontrado em {root}" + ("" if opts.recursive else " (use --recursive para subpastas)"))
         return []
     out_dir = Path(opts.output_dir) if opts.output_dir else None
     xmp_ext = cfg.get("files.xmp_extension", ".xmp")
@@ -141,13 +151,17 @@ def run_batch(opts: Options) -> list[FileResult]:
 
     todo: list[Path] = []
     for f in files:
-        ex = existing_sidecar(f, out_dir, root, xmp_ext) if writing else None
+        if is_jpeg(f):
+            ex = jpeg_out_path(f, out_dir, root) if writing else None
+            ex = ex if (ex is not None and ex.exists()) else None
+        else:
+            ex = existing_sidecar(f, out_dir, root, xmp_ext) if writing else None
         if ex is not None and not opts.overwrite:
-            LOGGER.info(f"SKIP {f.name}: {ex.name} já existe (use --overwrite)")
+            LOGGER.info(f"SKIP {f.name}: {ex.name} já existe (use --overwrite)" if not is_jpeg(f) else f"SKIP {f.name}: cópia já existe em {ex} (use --overwrite)")
             results[str(f)] = FileResult(str(f), "skipped", str(ex), "XMP já existe")
         else:
             todo.append(f)
-    LOGGER.info(f"{len(files)} RAW(s) encontrados; {len(todo)} a analisar" +
+    LOGGER.info(f"{len(files)} arquivo(s) encontrados; {len(todo)} a analisar" +
                 (" [dry-run]" if opts.dry_run else ""))
 
     workers = opts.workers or max(1, min((os.cpu_count() or 1) // 2 or 1, 4))   # RAW decoding is memory-hungry
@@ -218,6 +232,15 @@ def _finish(pk, raw: Path, cfg: Config, opts: Options, writing: bool, out_dir, r
         if key in P:
             lo, hi = cfg.limit(lim)
             P[key] = round(min(max(P[key], lo), hi))
+    jpeg = is_jpeg(raw)
+    if jpeg:
+        template = None
+        existing = extract_xmp(raw)                       # keep whatever XMP the camera/another tool already put in the file
+        if existing:
+            try:
+                template = parse_xmp(existing)
+            except Exception:  # noqa: BLE001 — unreadable packet: start clean
+                template = None
     model = build_model(P, {k: [tuple(p) for p in v] for k, v in pk["curves"].items()}, cfg, template)
     ref = parse_xmp(opts.reference) if opts.reference else None
     val = validate_model(model, cfg, ref)
@@ -233,14 +256,30 @@ def _finish(pk, raw: Path, cfg: Config, opts: Options, writing: bool, out_dir, r
     summary = {"parameters": dict(P), "estimates": report["estimates"], "wb": report["white_balance"],
                "skin": {"detected": report["skin"]["detected"], "confidence": report["skin"]["confidence"]},
                "curve": report["tone_curve"]["points"]}
-    xmp_path = sidecar_path(raw, out_dir, root, xmp_ext)
+    xmp_path = jpeg_out_path(raw, out_dir, root) if jpeg else sidecar_path(raw, out_dir, root, xmp_ext)
     rpath = None
     if opts.write_reports:
         suffix = cfg.get("files.report_suffix", ".analysis.json")
-        rpath = (sidecar_path(raw, out_dir, root, xmp_ext, suffix) if rep_root is None
-                 else sidecar_path(raw, rep_root, root, xmp_ext, suffix))
+        if jpeg:
+            rpath = (xmp_path.with_name(xmp_path.stem + suffix) if rep_root is None
+                     else sidecar_path(raw, rep_root, root, xmp_ext, suffix))
+        else:
+            rpath = (sidecar_path(raw, out_dir, root, xmp_ext, suffix) if rep_root is None
+                     else sidecar_path(raw, rep_root, root, xmp_ext, suffix))
         rpath.parent.mkdir(parents=True, exist_ok=True)
         rpath.write_text(json.dumps(report, indent=2, ensure_ascii=False, default=_json_default), encoding="utf-8")
+    if writing and jpeg:
+        if xmp_path.resolve() == raw.resolve():
+            raise ValueError("recusado: o destino é o próprio JPEG original")
+        if xmp_path.exists():
+            if not opts.overwrite:
+                raise FileExistsError(str(xmp_path))
+            if opts.backup:
+                shutil.copy2(xmp_path, xmp_path.with_name(f"{xmp_path.name}.bak-{datetime.now():%Y%m%d-%H%M%S}"))
+        embed_xmp(raw, xmp_path, XMPSerializer.serialize(model))
+        LOGGER.info(f"JPEG com XMP embutido (cópia): {xmp_path}")
+        return FileResult(str(raw), "written", xmp=str(xmp_path), report=str(rpath) if rpath else None,
+                          message="ok", warnings=warnings, summary=summary)
     if writing:
         _atomic_write(xmp_path, XMPSerializer.serialize(model), opts.overwrite, opts.backup)
         LOGGER.info(f"XMP criado: {xmp_path}")

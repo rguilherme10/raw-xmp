@@ -77,3 +77,15 @@ Referência completa: [docs/CLI.md](docs/CLI.md). Um exemplo gerado: [`docs/exam
 | logs no formato pedido; relatório `.analysis.json` | ✅ | `test_log_format`, `test_analysis_report_contents` |
 | testes e documentação | ✅ 105 testes; 8 documentos em `docs/` | — |
 | abrir no Lightroom/ACR | ❌ **não foi possível aqui** | ver "Testes manuais" em TESTING.md |
+
+## JPEG da câmera (experimental, não calibrado)
+
+`--jpeg` (em `process`/`analyze`/`calibrate`) também processa `.jpg/.jpeg`. JPEG não tem sidecar:
+os ajustes são gravados como **XMP embutido numa CÓPIA** (por padrão em `<pasta>/rawxmp_jpeg/`, ou em
+`--output-dir`). O original nunca é tocado e os pixels não são recodificados (só o segmento APP1 muda).
+
+* JPEG com um RAW de mesmo nome na pasta é ignorado, a menos que use `--jpeg-with-raw`.
+* O balanço de branco **não é escrito** em JPEG (Temperature/Tint do Lightroom não se aplicam a JPEG).
+* Usa o overlay `config/jpeg.yaml` (conservador, **sem calibração**); sem modelo de ruído/lente.
+* `calibrate --jpeg` usa JPEGs que já trazem ajustes do Lightroom embutidos como "edição humana".
+* Ainda **não testado abrindo no Lightroom**: importe uma cópia para conferir antes de usar em lote.

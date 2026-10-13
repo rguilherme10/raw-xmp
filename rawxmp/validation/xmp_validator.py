@@ -132,8 +132,17 @@ def validate_file(path: str | Path, cfg: Config | None = None, reference: str | 
             r.errors.append(f"XMP de referência ilegível: {exc}")
             return r
     try:
-        model = parse_xmp(path)
-    except (XMPModelError, OSError, UnicodeDecodeError) as exc:
+        from ..raw.jpeg import JpegError, extract_xmp, is_jpeg
+        if is_jpeg(path):
+            text = extract_xmp(path)
+            if not text:
+                r = ValidationReport(str(path))
+                r.errors.append("JPEG sem XMP embutido")
+                return r
+            model = parse_xmp(text)
+        else:
+            model = parse_xmp(path)
+    except (XMPModelError, OSError, UnicodeDecodeError, JpegError) as exc:
         r = ValidationReport(str(path))
         r.errors.append(str(exc))
         return r

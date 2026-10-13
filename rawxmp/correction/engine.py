@@ -17,6 +17,7 @@ from ..exposure.estimator import estimate_exposure
 from ..lens.lens import lens_settings
 from ..raw.reader import RawInfo, RawReader
 from ..raw.render import render_for_analysis
+from ..raw.jpeg import is_jpeg, read_jpeg_info, render_jpeg_linear
 from ..skin.detector import SkinResult
 from ..skin.robust import detect_skin_robust
 from ..tone.curve import CurveResult, build_curve
@@ -40,6 +41,7 @@ class Decision:
     curves: dict
     clamps: list[str] = field(default_factory=list)
     style: str = "base"
+    kind: str = "raw"
     camera_profile: str | None = None
     timings: dict = field(default_factory=dict)
 
@@ -50,6 +52,7 @@ class Decision:
             stats.pop("histogram_v", None)
         return {
             "file": self.info.file_name,
+            "source": self.kind,
             "style": self.style,
             "camera_rule_set": self.camera_profile,
             "metadata": self.info.to_dict(),
@@ -81,14 +84,24 @@ def _limit(cfg: Config, key: str, value: float, name: str, clamps: list[str]) ->
 
 def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = None) -> Decision:
     t0 = time.perf_counter()
-    reader = RawReader(path)
-    info = reader.read_info()
-    cfg = cfg.with_camera(info.camera)
-    lin = render_for_analysis(reader, cfg.get("analysis.max_dimension", 1024), cache_dir or cfg.get("analysis.cache_dir"))
+    jpeg = is_jpeg(path)
+    reader = None if jpeg else RawReader(path)
+    if jpeg:
+        info = read_jpeg_info(path)
+        cfg = cfg.with_overlay("jpeg").with_camera(info.camera)
+        lin = render_jpeg_linear(path, cfg.get("analysis.max_dimension", 1024))
+    else:
+        info = reader.read_info()
+        cfg = cfg.with_camera(info.camera)
+        lin = render_for_analysis(reader, cfg.get("analysis.max_dimension", 1024), cache_dir or cfg.get("analysis.cache_dir"))
     t1 = time.perf_counter()
 
     skin = detect_skin_robust(lin, info, cfg)
-    wb = estimate_white_balance(lin, info, cfg, skin)
+    if jpeg:     # the camera already applied white balance; Temperature/Tint of a JPEG are a relative scale in Camera Raw
+        why = "JPEG: balanço de branco da câmera mantido (escala relativa no Camera Raw, não gravada)"
+        wb = WBResult(Estimate(float(cfg.get("white_balance.default_kelvin")), 0.5, why), Estimate(0.0, 0.5, why), "As Shot", None, None)
+    else:
+        wb = estimate_white_balance(lin, info, cfg, skin)
     lin_wb = np.clip(lin @ wb.matrix.T.astype(np.float32), 0, 1) if wb.mode == "Custom" else lin
     stats = compute_stats(lin_wb, cfg, info.raw_clip_fraction)
     est = estimate_exposure(stats, skin, cfg, style_bias=float(cfg.get("style.exposure_bias", 0.0)))
@@ -98,7 +111,7 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
     bands = analyze_bands(sim, cfg)
     hsl = estimate_hsl(bands, skin, cfg)
     curve = build_curve(cfg, est, stats, skin)
-    noise = estimate_noise_model(reader.green_plane()) if cfg.get("detail.measure_noise", True) else None
+    noise = estimate_noise_model(reader.green_plane()) if (reader is not None and cfg.get("detail.measure_noise", True)) else None
     det = estimate_detail(info.iso, cfg, noise, est["exposure"].value)
     lens_params, lens_est = lens_settings(info.lens, cfg)
     est.update({f"detail_{k}": v for k, v in det.items()})
@@ -144,7 +157,8 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
              ParametricHighlights=par["highlights"], ParametricShadowSplit=25, ParametricMidtoneSplit=50,
              ParametricHighlightSplit=75)
     P["ToneCurveName2012"] = "Custom"
-    P["CameraProfile"] = st["camera_profile"]
+    if not jpeg:                      # JPEG has no camera profiles (only the embedded one)
+        P["CameraProfile"] = st["camera_profile"]
     # HSL = style baseline + evidence-driven correction
     for band in BANDS:
         cname = band.capitalize()
@@ -190,5 +204,5 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
               "ToneCurvePV2012Blue": [(0, 0), (255, 255)]}
     t3 = time.perf_counter()
     return Decision(info=info, stats=stats, skin=skin, wb=wb, hsl=hsl, curve=curve, estimates=est, params=P,
-                    curves=curves, clamps=clamps, style=cfg.style_name, camera_profile=cfg.camera_profile,
+                    curves=curves, clamps=clamps, kind="jpeg" if jpeg else "raw", style=cfg.style_name, camera_profile=cfg.camera_profile,
                     timings={"read_render": t1 - t0, "analysis": t2 - t1, "assemble": t3 - t2})

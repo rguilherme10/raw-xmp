@@ -43,3 +43,8 @@ exposure: {target_median: 0.15}
 white_balance: {kelvin_offset: -120}
 ```
 O primeiro arquivo (ordem alfabética) cujo `match` casar vence. Vem com `canon_generic.yaml` (casa "Canon").
+
+## Overlay `config/jpeg.yaml`
+
+Aplicado automaticamente a JPEG (`Config.with_overlay("jpeg")`). Valores conservadores e **não calibrados**:
+correção máxima 1 EV, ganhos de estimativa 0,5–0,7, sem ruído medido, sem perfil de lente, WB não escrito.

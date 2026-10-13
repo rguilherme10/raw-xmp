@@ -5,7 +5,10 @@ import os
 from pathlib import Path
 
 
-def find_raws(root: str | Path, recursive: bool, extensions: list[str]) -> list[Path]:
+JPEG_OUT_DIR = "rawxmp_jpeg"
+
+
+def find_raws(root: str | Path, recursive: bool, extensions: list[str], exclude_dirs: tuple[str, ...] = (JPEG_OUT_DIR,)) -> list[Path]:
     root = Path(root)
     exts = {e.lower() for e in extensions}
     if root.is_file():
@@ -13,7 +16,7 @@ def find_raws(root: str | Path, recursive: bool, extensions: list[str]) -> list[
     out: list[Path] = []
     if recursive:
         for dp, dn, fn in os.walk(root):
-            dn.sort()
+            dn[:] = sorted(d for d in dn if d not in exclude_dirs)      # never re-process our own JPEG copies
             out += [Path(dp) / f for f in sorted(fn) if Path(f).suffix.lower() in exts]
     else:
         out = [p for p in sorted(root.iterdir()) if p.is_file() and p.suffix.lower() in exts]
@@ -44,3 +47,14 @@ def sidecar_path(raw: Path, out_dir: Path | None, root: Path, xmp_ext: str, suff
     except ValueError:
         rel = Path(raw.name)
     return (Path(out_dir) / rel).with_name(raw.stem + suffix)
+
+
+def jpeg_out_path(src: Path, out_dir: Path | None, root: Path) -> Path:
+    """Where the XMP-carrying COPY of a camera JPEG goes: <out_dir or <root>/rawxmp_jpeg>/<relative path>/<same name>."""
+    base = root if root.is_dir() else root.parent
+    dest_root = Path(out_dir) if out_dir else base / JPEG_OUT_DIR
+    try:
+        rel = src.relative_to(base)
+    except ValueError:
+        rel = Path(src.name)
+    return dest_root / rel

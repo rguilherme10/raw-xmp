@@ -52,6 +52,11 @@ class Config:
             raise KeyError(f"limits.{name} missing in configuration")
         return float(s["min"]), float(s["max"])
 
+    def with_overlay(self, name: str) -> "Config":
+        """Merge config/<name>.yaml on top (used for camera JPEGs)."""
+        f = ROOT / "config" / f"{name}.yaml"
+        return Config(_merge(self.data, _load(f)), self.style_name, self.camera_profile) if f.exists() else self
+
     def with_camera(self, model: str | None) -> "Config":
         """Apply the first matching profiles/cameras/*.yaml (match: [substrings, case-insens.])."""
         if not model:

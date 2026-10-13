@@ -24,6 +24,9 @@ def _common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--template", help="XMP base cujos campos são preservados (os calculados o sobrescrevem)")
     p.add_argument("--reference", help="XMP de referência para checar compatibilidade estrutural")
     p.add_argument("--no-reports", action="store_true", help="não gravar .analysis.json")
+    p.add_argument("--jpeg", action="store_true",
+                   help="processa também JPEG da câmera: grava uma CÓPIA com o XMP embutido em <pasta>/rawxmp_jpeg/ (ou --output-dir); o original nunca é alterado")
+    p.add_argument("--jpeg-with-raw", action="store_true", help="inclui JPEGs que têm um RAW com o mesmo nome (RAW+JPEG)")
     p.add_argument("--json", action="store_true", help="imprime o resumo em JSON no final")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-q", "--quiet", action="store_true")
@@ -35,7 +38,7 @@ def _opts(a, *, write: bool) -> Options:
                    overwrite=getattr(a, "overwrite", False), backup=getattr(a, "backup", False),
                    dry_run=getattr(a, "dry_run", False) or not write, write_xmp=write, workers=a.workers,
                    output_dir=a.output_dir, report_dir=a.report_dir, cache_dir=a.cache_dir, template=a.template,
-                   reference=a.reference, write_reports=not a.no_reports)
+                   reference=a.reference, write_reports=not a.no_reports, jpeg=a.jpeg, jpeg_with_raw=a.jpeg_with_raw)
 
 
 def _print_table(results: list[FileResult]) -> None:
@@ -90,7 +93,8 @@ def cmd_process(a) -> int:
 def cmd_validate(a) -> int:
     cfg = load_config(a.style, a.config)
     root = Path(a.path)
-    files = [root] if root.is_file() else sorted(root.rglob("*.xmp") if a.recursive else root.glob("*.xmp"))
+    pats = ("*.xmp", "*.jpg", "*.jpeg", "*.JPG", "*.JPEG")
+    files = [root] if root.is_file() else sorted({f for pat in pats for f in (root.rglob(pat) if a.recursive else root.glob(pat))})
     if not files:
         LOGGER.error("nenhum .xmp encontrado")
         return 1
@@ -112,7 +116,7 @@ def cmd_validate(a) -> int:
 def cmd_calibrate(a) -> int:
     from ..calibration.calibrate import calibrate
     cfg = load_config(a.style, a.config)
-    s = calibrate(a.path, cfg, a.recursive, a.out)
+    s = calibrate(a.path, cfg, a.recursive, a.out, include_jpeg=a.jpeg)
     LOGGER.info(f"{s['n_pairs']} par(es) CR2+XMP comparados")
     for k, v in s["parameters"].items():
         print(f"  {k:<34} n={v['n']:<3}/{v['n_total']:<3} viés {v['bias']:+8.3f}  MAE {v['mae']:7.3f}  RMSE {v['rmse']:7.3f}  corr {v['corr']}" + ("  [preset]" if v.get("synced_preset") else ""))
@@ -248,6 +252,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("calibrate", help="compara a análise com XMPs humanos (pares NOME.CR2 + NOME.xmp)")
     p.add_argument("path")
     p.add_argument("--out", default="output/calibration")
+    p.add_argument("--jpeg", action="store_true", help="inclui JPEGs que já carregam ajustes do Lightroom embutidos (o 'XMP humano' está no próprio arquivo)")
     p.add_argument("--write-style", metavar="NOME", help="grava os alvos de exposição sugeridos em profiles/styles/NOME.yaml")
     p.add_argument("--style"), p.add_argument("--config")
     p.add_argument("--recursive", "-r", action="store_true")

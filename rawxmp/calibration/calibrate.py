@@ -31,27 +31,45 @@ def _num(x):
         return None
 
 
-def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir: str | Path = "output/calibration") -> dict:
+def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir: str | Path = "output/calibration",
+              include_jpeg: bool = False) -> dict:
     # The anchor must be fitted against the BASE algorithm, otherwise a style that already enables it would be fitted twice.
     ha = {**cfg.data["exposure"].get("highlight_anchor", {}), "enabled": False}
     cfg_base = Config({**cfg.data, "exposure": {**cfg.data["exposure"], "highlight_anchor": ha}}, cfg.style_name, cfg.camera_profile)
     rows, feats = [], []
-    for raw in find_raws(folder, recursive, cfg.get("files.raw_extensions", [".cr2"])):
-        human = next((f for f in raw.parent.iterdir()
-                      if f.suffix.lower() == ".xmp" and f.stem.lower() == raw.stem.lower()), None)
-        if human is None:
-            LOGGER.warning(f"{raw.name}: sem XMP humano ao lado — ignorado na calibração")
-            continue
-        try:
-            dec = analyze_raw(raw, cfg_base)
-            hm = parse_xmp(human)
-        except Exception as exc:  # noqa: BLE001
-            LOGGER.error(f"{raw.name}: {exc}")
-            continue
+    from ..raw.jpeg import JPEG_EXTENSIONS, extract_xmp, is_jpeg
+    exts = list(cfg.get("files.raw_extensions", [".cr2"])) + (list(JPEG_EXTENSIONS) if include_jpeg else [])
+    for raw in find_raws(folder, recursive, exts):
+        if is_jpeg(raw):                                      # the human settings live INSIDE the JPEG
+            text = extract_xmp(raw)
+            try:
+                hm = parse_xmp(text) if text else None
+            except Exception:  # noqa: BLE001
+                hm = None
+            if hm is None or not hm.attrs:
+                LOGGER.warning(f"{raw.name}: JPEG sem ajustes do Lightroom embutidos — ignorado na calibração")
+                continue
+            try:
+                dec = analyze_raw(raw, cfg_base)
+            except Exception as exc:  # noqa: BLE001
+                LOGGER.error(f"{raw.name}: {exc}")
+                continue
+        else:
+            human = next((f for f in raw.parent.iterdir()
+                          if f.suffix.lower() == ".xmp" and f.stem.lower() == raw.stem.lower()), None)
+            if human is None:
+                LOGGER.warning(f"{raw.name}: sem XMP humano ao lado — ignorado na calibração")
+                continue
+            try:
+                dec = analyze_raw(raw, cfg_base)
+                hm = parse_xmp(human)
+            except Exception as exc:  # noqa: BLE001
+                LOGGER.error(f"{raw.name}: {exc}")
+                continue
         ex_cfg = cfg.section("exposure")
         from ..exposure.estimator import skin_weight
         w_skin = skin_weight(dec.skin.confidence, ex_cfg) if dec.skin.detected else 0.0
-        row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
+        row = {"file": raw.name, "kind": dec.kind, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
                "skin_y": round(dec.skin.median_y or 0.0, 4), "y_p99": round(dec.stats.pct_y["p99"], 5), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
                "noise_rel": (dec.estimates.get("detail_noise_relative").value if dec.estimates.get("detail_noise_relative") else None),
                "aperture": dec.info.aperture, "shutter": dec.info.shutter, "lens": dec.info.lens, "dir": str(raw.parent)}
