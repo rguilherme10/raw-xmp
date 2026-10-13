@@ -61,3 +61,10 @@ vir de WB sincronizado. O deslocamento de tint por imagem foi limitado a ±2. Pa
 o peso da pele agora é 0 abaixo de `exposure.skin_min_confidence` (0,35) e cresce linearmente até `skin_full_confidence` (0,6); só com peso ≥ 0,5 (confiança ≳ 0,49) a pele "comanda" a exposição.
 IMG_6001 (rosto de criança em sombra fria): passou a ser detectada após neutralizar a dominante (conf 0,41, 1,2 % da imagem), mas com bochecha/boca apenas e um objeto rosado da parede na máscara (Y 0,227 vs 0,179 típico) → peso baixo, estimativa global prevalece.
 `skin-debug` agora lista os componentes (área, posição, matiz, Y, peso).
+
+**57 pares com o estilo da sessão (`sessao_ezequiel`)** — exposição MAE 0,242 EV (era 0,31), viés −0,065; com pele: viés −0,006 / MAE 0,225; sem pele: viés −0,146 / MAE 0,265.
+* **Limites cortavam o look:** Pretos do algoritmo = −25 em 57/57 fotos (limite mínimo padrão) contra −61…−91 do usuário; Brancos no limite −40 em 35/57. `make-style` agora **amplia `limits.*`** a partir das amostras e o `calibrate` avisa quando ≥ 30 % das fotos encostam num limite.
+* **Ganho da estimativa por foto** (`exposure.estimate_gain.<slider>`, 1,0 = seguir toda a correção medida; o viés de estilo é sempre somado): medido em 57 pares — Contraste **0,02** (o usuário mantém ~constante; erro 7,8 → 0,3 ao zerar a estimativa), Realces 0,23. O `calibrate` calcula e grava (`--write-style`).
+* `make-style --force` **preserva** `exposure:`, `consistency:` e `limits:` já gravados pelo `calibrate`.
+* Pior grupo restante: obturador 1/320 (n=15, viés −0,34, MAE 0,43), IMG_6001–6003 e 5999–6000 (cena de pele parcial/sombra fria): faltam features por foto (calibration_features.csv) para modelar.
+* Consistência de exposição em séries com os ajustes de câmera reais: MAE 0,242 → 0,21.

@@ -108,12 +108,29 @@ def build_style(models: list[XMPModel], name: str) -> tuple[dict, list[str]]:
                          "green_saturation": _med(models, "GreenSaturation", 0), "blue_hue": _med(models, "BlueHue", 0),
                          "blue_saturation": _med(models, "BlueSaturation", 0)}
     st["vignette"] = _med(models, "PostCropVignetteAmount", 0)
+    # The global limits must not clip YOUR look (e.g. Blacks −75 vs a default minimum of −25): widen them from the samples.
+    from .config import load_config
+    base = load_config()
+    lim: dict = {}
+    for key, name in (("Contrast2012", "contrast"), ("Highlights2012", "highlights"), ("Shadows2012", "shadows"),
+                      ("Whites2012", "whites"), ("Blacks2012", "blacks")):
+        vals = _vals(models, key)
+        if not vals:
+            continue
+        lo, hi = base.limit(name)
+        new_lo, new_hi = min(lo, max(-100, min(vals) - 10)), max(hi, min(100, max(vals) + 10))
+        if (new_lo, new_hi) != (lo, hi):
+            lim[name] = {"min": int(new_lo), "max": int(new_hi)}
+            notes.append(f"limits.{name}: {lo:g}..{hi:g} → {new_lo:g}..{new_hi:g} (o limite padrão cortaria o seu look)")
     for k in PER_IMAGE_REPORT:
         vals = _vals(models, k)
         if vals:
             notes.append(f"{k}: NÃO copiado (correção por foto). Nas suas referências: "
                          f"{min(vals):g} … {max(vals):g}")
-    return {"style": st}, notes
+    doc = {"style": st}
+    if lim:
+        doc["limits"] = lim
+    return doc, notes
 
 
 def write_style(models_paths: list[str | Path], name: str, out_dir: Path, with_template: bool = False,
@@ -128,6 +145,16 @@ def write_style(models_paths: list[str | Path], name: str, out_dir: Path, with_t
     if dest.exists() and not force:
         raise FileExistsError(f"{dest} já existe (use --force)")
     dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():                       # --force: regenerate the look but keep what calibrate wrote (exposure, consistency, limits)
+        old = yaml.safe_load(dest.read_text(encoding="utf-8")) or {}
+        for k, v in old.items():
+            if k == "style":
+                continue
+            if isinstance(v, dict) and isinstance(doc.get(k), dict):
+                doc[k] = {**v, **doc[k]}
+            else:
+                doc.setdefault(k, v)
+        notes.append("Seções existentes (exposure, consistency…) preservadas; só o look (style) e limites ampliados foram regenerados.")
     if with_template:
         tdir = out_dir / "templates"
         tdir.mkdir(parents=True, exist_ok=True)

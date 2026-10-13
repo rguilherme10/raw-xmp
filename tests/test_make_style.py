@@ -101,3 +101,38 @@ def test_element_form_numbers_are_unsigned_like_the_users_files(tmp_path, raw_se
     import re
     assert re.search(r"<crs:Vibrance>-?\d+</crs:Vibrance>", text)
     assert not re.search(r"<crs:\w+>\+\d", text)          # element form is unsigned, like the user's files
+
+
+def _xmp_with(tmp_path, name, **vals):
+    from rawxmp.xmp.model import XMPModel
+    from rawxmp.xmp.serializer import XMPSerializer
+    m = XMPModel()
+    for k, v in vals.items():
+        m.set(k, v)
+    p = tmp_path / name
+    p.write_text(XMPSerializer.serialize(m), encoding="utf-8")
+    return p
+
+
+def test_style_widens_global_limits_when_they_would_clip_the_users_look(tmp_path):
+    paths = [_xmp_with(tmp_path, f"{i}.xmp", Blacks2012=b, Whites2012=w, Highlights2012=-34)
+             for i, (b, w) in enumerate([(-61, -24), (-75, -30), (-91, -55)])]
+    doc, notes = build_style([parse_xmp(p) for p in paths], "t")
+    assert doc["limits"]["blacks"]["min"] <= -100 + 9 and doc["limits"]["whites"]["min"] <= -65
+    assert "highlights" not in doc["limits"]                                   # inside the default range: untouched
+    assert any("limits.blacks" in n for n in notes)
+
+
+def test_force_regeneration_keeps_calibrated_sections(tmp_path):
+    import yaml
+    paths = [_xmp_with(tmp_path, f"{i}.xmp", Blacks2012=-70, Vibrance=10) for i in range(3)]
+    prof = tmp_path / "prof"
+    dest, _ = write_style(paths, "sess", prof)
+    doc = yaml.safe_load(dest.read_text(encoding="utf-8"))
+    doc["exposure"] = {"skin_target_y": 0.16, "estimate_gain": {"contrast": 0.0}}          # as written by `calibrate --write-style`
+    doc["consistency"] = {"exposure": {"enabled": True}}
+    dest.write_text(yaml.safe_dump(doc), encoding="utf-8")
+    write_style(paths, "sess", prof, force=True)
+    again = yaml.safe_load(dest.read_text(encoding="utf-8"))
+    assert again["exposure"] == {"skin_target_y": 0.16, "estimate_gain": {"contrast": 0.0}}
+    assert again["consistency"] == {"exposure": {"enabled": True}} and again["style"]["vibrance"] == 10

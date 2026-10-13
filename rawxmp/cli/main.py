@@ -116,6 +116,9 @@ def cmd_calibrate(a) -> int:
     LOGGER.info(f"{s['n_pairs']} par(es) CR2+XMP comparados")
     for k, v in s["parameters"].items():
         print(f"  {k:<34} n={v['n']:<3}/{v['n_total']:<3} viés {v['bias']:+8.3f}  MAE {v['mae']:7.3f}  RMSE {v['rmse']:7.3f}  corr {v['corr']}" + ("  [preset]" if v.get("synced_preset") else ""))
+    if s.get("estimate_gain"):
+        print("Ganho da estimativa por foto (1,0 = seguir tudo; ~0 = você mantém o valor do estilo):",
+              ", ".join(f"{k} {v}" for k, v in s["estimate_gain"].items()))
     if s.get("exposure_groups"):
         g = s["exposure_groups"]
         print("Exposição por tipo de foto:", ", ".join(f"{k}: n={v['n']} viés {v['bias']} MAE {v['mae']}" for k, v in g.items()))
@@ -125,7 +128,7 @@ def cmd_calibrate(a) -> int:
               f"MAE {c['mae_without']} → {c['mae_with']} EV  (ative com consistency.exposure.enabled: true)")
     if getattr(a, "write_style", None):
         from ..calibration.calibrate import write_to_style
-        dest = write_to_style(a.write_style, s["suggestions"])
+        dest = write_to_style(a.write_style, s["suggestions"], limits=s.get("suggestions_limits"))
         LOGGER.info(f"Alvos de exposição gravados em {dest}")
     if not a.style:
         LOGGER.warning("Sem --style: Contraste/Realces/Sombras/Brancos/Pretos/Vibrance são comparados com o estilo BASE, não com o look "

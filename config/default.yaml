@@ -45,6 +45,7 @@ exposure:
   highlight_ceiling: 0.80           # brightening may push the bright subject (p99) up to this linear value, no further
   highlight_recovery_stops: 0.15    # extra tolerance for the very top (p99.9) that Highlights can recover
   rounding: 0.05
+  estimate_gain: {contrast: 1.0, highlights: 1.0, shadows: 1.0, whites: 1.0, blacks: 1.0}   # share of the image-measured correction applied (style bias is always added); `calibrate` suggests values
   underexposed: {p999_max: 0.35, p50_ratio: 0.6}   # nothing near white AND dark median → plain under-exposure
   low_key:  {p95_max: 0.12, p50_max: 0.05}   # dark median but real highlights exist → intentional
   high_key: {p5_min: 0.12, p50_min: 0.35}

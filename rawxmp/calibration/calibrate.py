@@ -130,6 +130,13 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
                 notes.append(f"{param}: só {len(v)} amostra(s) ({'com' if key == 'skin_led' else 'sem'} pele); precisa de ≥ 5")
         summary["suggestions"]["note"] = ("Viés das fotos COM pele → exposure.skin_target_y; SEM pele → exposure.target_median "
                                           "(preferencialmente em profiles/cameras/*.yaml). " + "; ".join(notes))
+    gains, limit_sugg, warns = tonal_gains(rows, cfg)
+    if gains:
+        summary["estimate_gain"] = gains
+        for k, v in gains.items():
+            summary["suggestions"][f"exposure.estimate_gain.{k}"] = v
+    summary["suggestions_limits"] = limit_sugg
+    summary.setdefault("warnings", []).extend(warns)
     # Would sharing one exposure inside a series (same camera settings) have matched the human better?
     from ..pipeline.consistency import consistent_exposures
     cc = dict(cfg.section("consistency").get("exposure", {}))
@@ -178,25 +185,59 @@ def _corr(a, b):
     return round(sum((x - ma) * (y - mb) for x, y in zip(a, b)) / math.sqrt(va * vb), 3)
 
 
-def write_to_style(name: str, suggestions: dict, profiles_dir: Path | None = None) -> Path:
-    """Merge accepted exposure suggestions into profiles/styles/<name>.yaml (created if missing)."""
+def tonal_gains(rows: list[dict], cfg: Config) -> tuple[dict, dict, list[str]]:
+    """Image-driven part of the tonal sliders: how much of it does the photographer follow?  (gain), and which
+    configured limits clip the photographer's look (limit suggestions)."""
+    gains, limit_sugg, warns = {}, {}, []
+    for key, name in (("Contrast2012", "contrast"), ("Highlights2012", "highlights"), ("Shadows2012", "shadows"),
+                      ("Whites2012", "whites"), ("Blacks2012", "blacks")):
+        ok = [(r.get(f"{key}_algo"), r.get(f"{key}_human")) for r in rows]
+        ok = [(x, y) for x, y in ok if x is not None and y is not None]
+        if len(ok) < 20:
+            continue
+        lo, hi = cfg.limit(name)
+        at_limit = sum(1 for x, _ in ok if x <= lo + 1e-9 or x >= hi - 1e-9) / len(ok)
+        if at_limit >= 0.3:
+            hv = [y for _, y in ok]
+            limit_sugg[f"limits.{name}"] = {"min": int(min(lo, max(-100, min(hv) - 10))), "max": int(max(hi, min(100, max(hv) + 10)))}
+            warns.append(f"{key}: {at_limit * 100:.0f}% das fotos encostam no limite configurado [{lo:g}, {hi:g}] — o limite corta o seu look; "
+                         f"sugestão limits.{name} = {limit_sugg[f'limits.{name}']}")
+            continue
+        bias = cfg.get(f"style.{name}_bias", 0) or 0
+        xs, ys = [x - bias for x, _ in ok], [y - bias for _, y in ok]
+        sxx = sum(x * x for x in xs)
+        if sxx > 1e-9:
+            gains[name] = round(min(max(sum(x * y for x, y in zip(xs, ys)) / sxx, 0.0), 1.2), 2)
+    return gains, limit_sugg, warns
+
+
+def write_to_style(name: str, suggestions: dict, profiles_dir: Path | None = None, limits: dict | None = None) -> Path:
+    """Merge accepted calibration results into profiles/styles/<name>.yaml (created if missing).
+
+    Accepts dotted keys under ``exposure.`` (targets and ``estimate_gain.<slider>``) and ``limits`` overrides.
+    """
     import re
     import yaml
     from ..config import ROOT
     if not re.fullmatch(r"[A-Za-z0-9_\-]+", name):
         raise ValueError("nome de estilo inválido")
     dest = (profiles_dir or ROOT / "profiles") / "styles" / f"{name}.yaml"
-    doc = yaml.safe_load(dest.read_text(encoding="utf-8")) if dest.exists() else {}
-    doc = doc or {}
-    ex = doc.setdefault("exposure", {})
+    doc = (yaml.safe_load(dest.read_text(encoding="utf-8")) if dest.exists() else None) or {}
     changed = {}
-    for k in ("skin_target_y", "target_median"):
-        v = suggestions.get(f"exposure.{k}")
-        if v is not None:
-            ex[k] = v
-            changed[k] = v
+    for key, v in suggestions.items():
+        if not key.startswith("exposure.") or v is None:
+            continue
+        parts = key.split(".")[1:]
+        cur = doc.setdefault("exposure", {})
+        for part in parts[:-1]:
+            cur = cur.setdefault(part, {})
+        cur[parts[-1]] = v
+        changed[key] = v
+    for lname, lv in (limits or {}).items():
+        doc.setdefault("limits", {})[lname.split(".")[-1]] = lv
+        changed[lname] = lv
     if not changed:
-        raise ValueError("nenhuma sugestão de exposição disponível (precisa de ≥ 5 amostras individuais por grupo)")
+        raise ValueError("nenhuma sugestão disponível para gravar (precisa de ≥ 5 amostras individuais por grupo ou ≥ 20 pares para ganhos)")
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
     return dest

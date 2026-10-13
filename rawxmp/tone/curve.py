@@ -45,7 +45,7 @@ def build_curve(cfg, estimates: dict[str, Estimate], stats, skin) -> CurveResult
         return int(np.argmin([abs(v - x) for v in xs]))
 
     # image-driven S-curve amount: positive (more contrast) when the contrast slider is positive
-    c = estimates["contrast"].value - cfg.get("style.contrast_bias", 0)     # image-measured part only
+    c = estimates["contrast"].value - cfg.get("style.contrast_bias", 0)     # image-measured part only (already scaled by estimate_gain)
     s_levels = clamp(c * tc["contrast_to_levels"], -tc["max_s_levels"] / 2, tc["max_s_levels"])
     if abs(s_levels) >= 0.5:
         ys[idx(64)] -= s_levels

@@ -13,6 +13,11 @@ def _post_v(stats: ImageStats, stops: float, key: str) -> float:
     return float(srgb_encode(np.clip(stats.pct_y[key] * 2.0 ** stops, 0, 1)))
 
 
+def _gain(ex: dict, name: str) -> float:
+    """How much of the image-measured correction is applied (1.0 = all). Calibrated per photographer/style."""
+    return float((ex.get("estimate_gain") or {}).get(name, 1.0))
+
+
 def skin_weight(confidence: float, ex: dict) -> float:
     """Weight of the skin-based estimate: 0 below skin_min_confidence, full skin_weight from skin_full_confidence.
 
@@ -107,7 +112,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     hv = -(0.5 * abs(h["max_pull"]) * need + 0.5 * abs(h["max_pull"]) * pressure)
     if stats.key == "low_key":
         hv *= 0.3
-    hv += cfg.get("style.highlights_bias", 0)
+    hv = hv * _gain(ex, "highlights") + cfg.get("style.highlights_bias", 0)
     highlights = Estimate(
         round(hv), clip01(0.85 - 0.25 * (stats.key == "low_key")),
         f"p99 pós-exposição V={p99_v:.2f} (joelho {h['knee']}), pixels cortados {post_clip * 100:.2f}% → "
@@ -120,7 +125,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         sv *= 0.4
     if p5_v > s["flat_p5_v"]:
         sv = 0.0
-    sv += cfg.get("style.shadows_bias", 0)
+    sv = sv * _gain(ex, "shadows") + cfg.get("style.shadows_bias", 0)
     shadows = Estimate(round(sv), 0.8 - 0.2 * (stats.key == "low_key"),
                        f"p5 pós-exposição V={p5_v:.2f} (alvo ≥ {s['p5_target_v']}) → "
                        + ("abrir sombras" if sv > 5 else "sombras adequadas"))
@@ -136,7 +141,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         why = f"{crushed * 100:.1f}% de pixels esmagados em preto → aliviar"
     else:
         bv, why = 0.0, "ponto de preto adequado"
-    bv += cfg.get("style.blacks_bias", 0)
+    bv = bv * _gain(ex, "blacks") + cfg.get("style.blacks_bias", 0)
     blacks = Estimate(round(bv), 0.75, why)
 
     # Whites --------------------------------------------------------------------------------
@@ -148,7 +153,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
     else:
         wv = clamp((wcfg["p999_target_v"] - p999_v) * wcfg["gain"], -20, wcfg["max_gain"])
         wwhy = f"p99.9 pós-exposição V={p999_v:.2f} (alvo {wcfg['p999_target_v']})"
-    wv += cfg.get("style.whites_bias", 0)
+    wv = wv * _gain(ex, "whites") + cfg.get("style.whites_bias", 0)
     whites = Estimate(round(wv), 0.7, wwhy)
 
     # Contrast ------------------------------------------------------------------------------
@@ -159,7 +164,7 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         cv += 4
     if stats.key in ("high_contrast",):
         cv = min(cv, 0.0)
-    cv += cfg.get("style.contrast_bias", 0)
+    cv = cv * _gain(ex, "contrast") + cfg.get("style.contrast_bias", 0)
     contrast = Estimate(round(cv), 0.65 if stats.key == "normal" else 0.5,
                         f"amplitude perceptual p95−p5={spread:.2f} (alvo {c['target_spread']}), "
                         f"contraste local {stats.local_contrast:.3f}, cena {stats.key}")
