@@ -173,3 +173,17 @@ def test_retry_can_be_disabled(raw_set, cfg):
     off = Config({**cfg.data, "skin": {**cfg.data["skin"], "retry_with_neutral": False}})
     assert not detect_skin_robust(lin, info, off).detected
     assert detect_skin_robust(lin, info, cfg).detected
+
+
+def test_skin_weight_grows_with_confidence_and_vanishes_below_minimum(cfg):
+    from rawxmp.exposure.estimator import skin_weight
+    ex = cfg.section("exposure")
+    ws = [skin_weight(c, ex) for c in (0.2, 0.35, 0.45, 0.6, 0.9)]
+    assert ws[0] == ws[1] == 0.0 and ws == sorted(ws) and ws[3] == ws[4] == ex["skin_weight"]
+    assert skin_weight(0.405, ex) < 0.5 <= skin_weight(0.55, ex)           # IMG_6001-like partial face must not lead
+
+
+def test_skin_debug_lists_components(cfg):
+    dbg = {}
+    detect_skin(scene_with_patch((224, 172, 140), 0.3), cfg, dbg)
+    assert dbg["components"] and {"area_pct", "hue", "Y", "weight", "center_xy_pct"} <= set(dbg["components"][0])

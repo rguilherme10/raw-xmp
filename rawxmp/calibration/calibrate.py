@@ -46,7 +46,8 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
             LOGGER.error(f"{raw.name}: {exc}")
             continue
         ex_cfg = cfg.section("exposure")
-        w_skin = ex_cfg["skin_weight"] * min(1.0, dec.skin.confidence / ex_cfg["skin_full_confidence"]) if dec.skin.detected else 0.0
+        from ..exposure.estimator import skin_weight
+        w_skin = skin_weight(dec.skin.confidence, ex_cfg) if dec.skin.detected else 0.0
         row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
                "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
                "noise_rel": (dec.estimates.get("detail_noise_relative").value if dec.estimates.get("detail_noise_relative") else None),

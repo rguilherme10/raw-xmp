@@ -130,6 +130,7 @@ def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None, color_img: np.n
 
     if debug is not None:
         debug["mask_kept"] = mask
+
     # Components are weighted by how skin-like their hue is: beige floors / walls / wood sit at Lab hue >= ~62,
     # real faces and hands at ~40-58 (measured on 10 real photos).  Their luminance must not drive the exposure.
     lo, hi = s["hue_prefer"]
@@ -138,6 +139,17 @@ def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None, color_img: np.n
     w_comp = np.where(comp_hue <= lo, 1.0, np.clip(1.0 - (comp_hue - lo) / (hi - lo) * (1.0 - s["hue_prefer_min_weight"]),
                                                    s["hue_prefer_min_weight"], 1.0))
     wlab = np.concatenate([[0.0], w_comp])
+    if debug is not None:
+        yy = luminance(lin) / gain
+        comps = []
+        for i in comp_ids:
+            if not keep[i]:
+                continue
+            ci = labels == i
+            ys, xs = np.nonzero(ci)
+            comps.append({"area_pct": round(float(ci.mean() * 100), 2), "center_xy_pct": [round(float(xs.mean() / w * 100)), round(float(ys.mean() / h * 100))],
+                          "hue": round(float(np.median(hue[ci])), 1), "Y": round(float(np.median(yy[ci])), 3), "weight": round(float(wlab[i]), 2)})
+        debug["components"] = sorted(comps, key=lambda c: -c["area_pct"])
     wpix = wlab[labels][mask]
     wpix = wpix / max(wpix.sum(), 1e-9)
 

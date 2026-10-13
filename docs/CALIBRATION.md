@@ -56,3 +56,8 @@ vir de WB sincronizado. O deslocamento de tint por imagem foi limitado a ±2. Pa
   Sem variação humana não há como ajustar `noise_gain`: precisa de fotos com ISO alto onde você aplicou NR > 0.
 * Consistência de exposição em séries: **sem ganho real** (MAE 0,310 → 0,308 com 56/57 agrupadas); o ganho aparente do CSV anterior vinha de valores colados. Continua desligada.
 * Estilo: `ColorNoiseReduction` humano 25 (e 0 em duas), nitidez 35/58 — diferenças de ESTILO; gere o estilo da sessão com `make-style`.
+
+**Confiança da pele × erro (57 pares reais):** conf < 0,5: n=8, MAE 0,46 EV; 0,5–0,6: n=9, MAE 0,21; ≥ 0,75: n=12, MAE 0,14. Máscaras fracas estão contaminadas (paredes, objetos rosados, rosto parcial) →
+o peso da pele agora é 0 abaixo de `exposure.skin_min_confidence` (0,35) e cresce linearmente até `skin_full_confidence` (0,6); só com peso ≥ 0,5 (confiança ≳ 0,49) a pele "comanda" a exposição.
+IMG_6001 (rosto de criança em sombra fria): passou a ser detectada após neutralizar a dominante (conf 0,41, 1,2 % da imagem), mas com bochecha/boca apenas e um objeto rosado da parede na máscara (Y 0,227 vs 0,179 típico) → peso baixo, estimativa global prevalece.
+`skin-debug` agora lista os componentes (área, posição, matiz, Y, peso).

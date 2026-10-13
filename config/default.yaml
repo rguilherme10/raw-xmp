@@ -53,6 +53,7 @@ exposure:
   skin_weight: 0.9                  # max weight of the skin-based exposure estimate (people are the subject)
   skin_led_damping: 1.0             # no attenuation when skin drives the exposure (human/predicted ratio ≈ 1.0)
   skin_led_median_ceiling: 0.45     # when skin-led, brightening may take the frame's median up to this, no further
+  skin_min_confidence: 0.35         # below this the skin estimate has weight 0
   skin_full_confidence: 0.6         # skin confidence at which that max weight is reached
   highlights:
     knee: 0.85                      # post-exposure p99 above this starts pulling highlights
