@@ -60,8 +60,12 @@ def _faces(enc: np.ndarray, cascade_path) -> int:
     return int(len(cc.detectMultiScale(gray, 1.1, 5, minSize=(max(24, gray.shape[0] // 14),) * 2)))
 
 
-def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None) -> SkinResult:
-    """Detect skin.  ``debug`` (optional dict) receives per-criterion pass fractions for diagnosis."""
+def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None, color_img: np.ndarray | None = None) -> SkinResult:
+    """Detect skin.  ``debug`` (optional dict) receives per-criterion pass fractions for diagnosis.
+
+    ``color_img``: optional colour-corrected version of ``lin`` (e.g. neutralised cast) used only to CLASSIFY pixels;
+    luminance and RGB statistics are always measured on ``lin``.
+    """
     s = cfg.section("skin")
     if not s.get("enabled", True):
         return SkinResult(reason="detecção de pele desativada na configuração")
@@ -71,11 +75,12 @@ def detect_skin(lin: np.ndarray, cfg, debug: dict | None = None) -> SkinResult:
     gain = float(np.clip(s.get("normalise_median", 0.14) / max(med, 1e-4), 1.0, s.get("max_normalise_gain", 8.0)))
     lin_orig = lin
     lin = np.clip(lin * gain, 0, 1).astype(np.float32)
-    enc = srgb_encode(lin).astype(np.float32)
+    lin_c = lin if color_img is None else np.clip(color_img * gain, 0, 1).astype(np.float32)
+    enc = srgb_encode(lin_c).astype(np.float32)
     h, w = enc.shape[:2]
     ycc = cv2.cvtColor((enc * 255).astype(np.uint8), cv2.COLOR_RGB2YCrCb)
     cr, cb = ycc[..., 1], ycc[..., 2]
-    lab = linear_to_lab(lin)
+    lab = linear_to_lab(lin_c)
     hue = lab_hue_deg(lab[..., 1], lab[..., 2])
     chroma = np.hypot(lab[..., 1], lab[..., 2])
     hsv = rgb_to_hsv(enc)

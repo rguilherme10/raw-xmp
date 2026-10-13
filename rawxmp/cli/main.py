@@ -176,11 +176,12 @@ def cmd_skin_debug(a) -> int:
     import numpy as np
     from ..raw.reader import RawReader
     from ..raw.render import render_for_analysis
-    from ..skin.detector import detect_skin
+    from ..skin.robust import detect_skin_robust
     cfg = load_config(a.style, a.config)
-    lin = render_for_analysis(RawReader(a.raw), cfg.get("analysis.max_dimension", 1024))
+    reader = RawReader(a.raw)
+    lin = render_for_analysis(reader, cfg.get("analysis.max_dimension", 1024))
     dbg: dict = {}
-    res = detect_skin(lin, cfg, dbg)
+    res = detect_skin_robust(lin, reader.read_info(), cfg, dbg)
     over = dbg.get("rgb_enc", lin).copy()
     if "mask_all" in dbg:
         over[dbg["mask_all"]] = over[dbg["mask_all"]] * 0.4 + np.array([1, 0, 0]) * 0.6

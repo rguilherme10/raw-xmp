@@ -17,7 +17,8 @@ from ..exposure.estimator import estimate_exposure
 from ..lens.lens import lens_settings
 from ..raw.reader import RawInfo, RawReader
 from ..raw.render import render_for_analysis
-from ..skin.detector import SkinResult, detect_skin
+from ..skin.detector import SkinResult
+from ..skin.robust import detect_skin_robust
 from ..tone.curve import CurveResult, build_curve
 from ..types import Estimate, clamp, clip01
 from ..white_balance.estimator import WBResult, estimate_white_balance
@@ -86,7 +87,7 @@ def analyze_raw(path: str | Path, cfg: Config, cache_dir: str | Path | None = No
     lin = render_for_analysis(reader, cfg.get("analysis.max_dimension", 1024), cache_dir or cfg.get("analysis.cache_dir"))
     t1 = time.perf_counter()
 
-    skin = detect_skin(lin, cfg)
+    skin = detect_skin_robust(lin, info, cfg)
     wb = estimate_white_balance(lin, info, cfg, skin)
     lin_wb = np.clip(lin @ wb.matrix.T.astype(np.float32), 0, 1) if wb.mode == "Custom" else lin
     stats = compute_stats(lin_wb, cfg, info.raw_clip_fraction)

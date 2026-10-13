@@ -56,6 +56,10 @@ Máscara = YCrCb (Cr 133–173, Cb 77–127) ∧ HSV (S 0,08–0,78) ∧ Lab (ma
 componentes conexos com área ≥ 0,3 % e compacidade ≥ 0,30. Confiança = `0,15 + 0,85(0,45·área + 0,35·concentração do matiz + 0,20·dominância)`,
 teto 0,85 sem rosto confirmado, **× penalidade se a área passa de 30 % do quadro** (parede alaranjada ≠ pele). Saída: matiz/croma/L*, Y mediano e desvio (`toward_red|magenta|yellow`).
 
+**Dominante de cor (segunda passada).** Em luz fria/sombra (IMG_6001: rosto de criança, só ~5 % dos pixels passando em Cr/Cb e matiz) o rosto perde o vermelho que os critérios exigem.
+Se a primeira passada não achar pele (ou achar com confiança < 0,35), neutraliza-se a dominante com as superfícies neutras da própria foto (mesmo cluster usado no WB, ganhos limitados a 0,6–1,8) e detecta-se de novo;
+a luminância é sempre medida na imagem original. Desligável em `skin.retry_with_neutral`.
+
 ## 7. Curva tonal (`tone/curve.py`)
 Pontos x = 0, 32, 64, 128, 192, 255. Curva do estilo + modulação: S-curve proporcional ao contraste estimado (±8 níveis), alívio de sombras esmagadas,
 roll-off de realces sob pressão de clipping, **inclinação 128→192 limitada a 0,9–1,2 com pele**, desvio máximo |y−x| ≤ 14, extremos ancorados, monotonia estrita (inclinação ≥ 0,35).

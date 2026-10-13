@@ -146,3 +146,30 @@ def test_beige_floor_does_not_drive_skin_luminance(cfg):
     both = detect_skin(img, cfg)
     assert both.detected and only_face.detected
     assert both.median_y < only_face.median_y * 1.6        # without hue weighting this was > 3x
+
+
+# ---- colour casts (regression: cool shade made a child's face invisible to the detector, IMG_6001) ----------
+def test_skin_found_under_cool_cast_after_neutralising(decisions):
+    s = decisions["cool_cast"].skin
+    assert s.detected and s.confidence > 0.5 and "neutralizar" in s.reason
+
+
+def test_first_pass_detections_are_untouched_by_the_retry(decisions):
+    s = decisions["normal"].skin
+    assert s.detected and "neutralizar" not in s.reason
+
+
+def test_retry_does_not_invent_skin(decisions):
+    assert not decisions["no_skin"].skin.detected
+
+
+def test_retry_can_be_disabled(raw_set, cfg):
+    from rawxmp.config import Config
+    from rawxmp.raw.reader import RawReader
+    from rawxmp.raw.render import render_for_analysis
+    from rawxmp.skin.robust import detect_skin_robust
+    r = RawReader(raw_set["cool_cast"])
+    lin, info = render_for_analysis(r, 480), r.read_info()
+    off = Config({**cfg.data, "skin": {**cfg.data["skin"], "retry_with_neutral": False}})
+    assert not detect_skin_robust(lin, info, off).detected
+    assert detect_skin_robust(lin, info, cfg).detected
