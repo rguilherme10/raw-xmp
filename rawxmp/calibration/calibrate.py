@@ -32,6 +32,9 @@ def _num(x):
 
 
 def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir: str | Path = "output/calibration") -> dict:
+    # The anchor must be fitted against the BASE algorithm, otherwise a style that already enables it would be fitted twice.
+    ha = {**cfg.data["exposure"].get("highlight_anchor", {}), "enabled": False}
+    cfg_base = Config({**cfg.data, "exposure": {**cfg.data["exposure"], "highlight_anchor": ha}}, cfg.style_name, cfg.camera_profile)
     rows, feats = [], []
     for raw in find_raws(folder, recursive, cfg.get("files.raw_extensions", [".cr2"])):
         human = next((f for f in raw.parent.iterdir()
@@ -40,7 +43,7 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
             LOGGER.warning(f"{raw.name}: sem XMP humano ao lado — ignorado na calibração")
             continue
         try:
-            dec = analyze_raw(raw, cfg)
+            dec = analyze_raw(raw, cfg_base)
             hm = parse_xmp(human)
         except Exception as exc:  # noqa: BLE001
             LOGGER.error(f"{raw.name}: {exc}")
@@ -49,7 +52,7 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
         from ..exposure.estimator import skin_weight
         w_skin = skin_weight(dec.skin.confidence, ex_cfg) if dec.skin.detected else 0.0
         row = {"file": raw.name, "camera": dec.info.camera, "iso": dec.info.iso, "skin_conf": round(dec.skin.confidence, 3),
-               "skin_y": round(dec.skin.median_y or 0.0, 4), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
+               "skin_y": round(dec.skin.median_y or 0.0, 4), "y_p99": round(dec.stats.pct_y["p99"], 5), "skin_led": int(w_skin >= 0.5), "scene_key": dec.stats.key,
                "noise_rel": (dec.estimates.get("detail_noise_relative").value if dec.estimates.get("detail_noise_relative") else None),
                "aperture": dec.info.aperture, "shutter": dec.info.shutter, "lens": dec.info.lens, "dir": str(raw.parent)}
         for k in COMPARE:
@@ -137,6 +140,13 @@ def calibrate(folder: str | Path, cfg: Config, recursive: bool = False, out_dir:
             summary["suggestions"][f"exposure.estimate_gain.{k}"] = v
     summary["suggestions_limits"] = limit_sugg
     summary.setdefault("warnings", []).extend(warns)
+    anchor = fit_highlight_anchor(rows, cfg)
+    if anchor:
+        summary["highlight_anchor"] = anchor
+        if anchor["recommended"]:
+            for k in ("slope", "intercept", "weight"):
+                summary["suggestions"][f"exposure.highlight_anchor.{k}"] = anchor[k]
+            summary["suggestions"]["exposure.highlight_anchor.enabled"] = True
     # Would sharing one exposure inside a series (same camera settings) have matched the human better?
     from ..pipeline.consistency import consistent_exposures
     cc = dict(cfg.section("consistency").get("exposure", {}))
@@ -183,6 +193,42 @@ def _corr(a, b):
     if va <= 0 or vb <= 0:
         return None
     return round(sum((x - ma) * (y - mb) for x, y in zip(a, b)) / math.sqrt(va * vb), 3)
+
+
+def fit_highlight_anchor(rows: list[dict], cfg: Config, min_n: int = 20, min_gain: float = 0.02) -> dict | None:
+    """Fit  exposure ~ intercept + slope*log2(p99)  and validate leave-one-out against the base algorithm.
+
+    The blend weight follows the estimator: it shrinks as the skin estimate gains confidence.  Returns None without
+    enough individually edited pairs; ``recommended`` only when the validated gain is >= ``min_gain`` EV.
+    """
+    import numpy as np
+    ex = cfg.section("exposure")
+    vals = [r.get("Exposure2012_human") for r in rows if r.get("Exposure2012_human") is not None]
+    cnt = Counter(round(v, 3) for v in vals)
+    mode, mode_n = cnt.most_common(1)[0] if cnt else (None, 0)
+    preset = mode_n >= 3 and mode_n / max(len(vals), 1) >= 0.4
+    use = [r for r in rows if r.get("Exposure2012_human") is not None and r.get("Exposure2012_algo") is not None
+           and r.get("y_p99") and not (preset and round(r["Exposure2012_human"], 3) == mode)]
+    if len(use) < min_n:
+        return None
+    x = np.log2(np.maximum([r["y_p99"] for r in use], 1e-4))
+    h = np.array([r["Exposure2012_human"] for r in use], float)
+    a = np.array([r["Exposure2012_algo"] for r in use], float)
+    conf = np.array([r.get("skin_conf") or 0.0 for r in use], float)
+    lo, hi = ex["skin_min_confidence"], ex["skin_full_confidence"]
+    w_skin = np.clip((conf - lo) / max(hi - lo, 1e-6), 0, 1)
+    weight = 0.9
+    pred = np.zeros(len(use))
+    for i in range(len(use)):
+        m = np.ones(len(use), bool)
+        m[i] = False
+        coef = np.linalg.lstsq(np.c_[np.ones(m.sum()), x[m]], h[m], rcond=None)[0]
+        pred[i] = coef[0] + coef[1] * x[i]
+    blend = (1 - weight * (1 - w_skin)) * a + weight * (1 - w_skin) * pred
+    coef = np.linalg.lstsq(np.c_[np.ones(len(use)), x], h, rcond=None)[0]
+    mae0, mae1 = float(np.abs(a - h).mean()), float(np.abs(blend - h).mean())
+    return {"n": len(use), "intercept": round(float(coef[0]), 3), "slope": round(float(coef[1]), 3), "weight": weight,
+            "mae_without": round(mae0, 3), "mae_with_loo": round(mae1, 3), "recommended": bool(mae0 - mae1 >= min_gain)}
 
 
 def tonal_gains(rows: list[dict], cfg: Config) -> tuple[dict, dict, list[str]]:

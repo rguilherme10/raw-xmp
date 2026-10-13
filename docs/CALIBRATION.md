@@ -68,3 +68,9 @@ IMG_6001 (rosto de criança em sombra fria): passou a ser detectada após neutra
 * `make-style --force` **preserva** `exposure:`, `consistency:` e `limits:` já gravados pelo `calibrate`.
 * Pior grupo restante: obturador 1/320 (n=15, viés −0,34, MAE 0,43), IMG_6001–6003 e 5999–6000 (cena de pele parcial/sombra fria): faltam features por foto (calibration_features.csv) para modelar.
 * Consistência de exposição em séries com os ajustes de câmera reais: MAE 0,242 → 0,21.
+
+**Âncora nas altas luzes (57 pares + `calibration_features.csv`)**
+* Regressão da exposição humana nos percentis de luminância (leave-one-out): só o **p99** importa — `exposição ≈ 0,09 − 0,55·log₂(p99)`; o coeficiente da mediana é ≈ 0. O usuário ancora no tom mais claro e comprime (inclinação −0,55, não −1).
+* Por subconjunto (erro médio, EV): pele com confiança ≥ 0,75 → algoritmo 0,138 vs âncora 0,276; sem pele/baixa confiança → 0,261 vs **0,189**. Combinação com peso `0,9·(1 − peso_da_pele)`: total **0,242 → ~0,215**, mantendo 0,138 onde a pele é confiável.
+* Implementado como **opt-in por estilo** (`exposure.highlight_anchor`): uma única sessão (p99 de 0,17–0,85) pode não generalizar — numa sessão anterior (p99 0,93–0,98 com pele) o modelo falharia. O `calibrate` ajusta, valida por leave-one-out e só recomenda com ganho ≥ 0,02 EV e ≥ 20 pares editados individualmente (`--write-style` grava).
+* Ainda sem solução: IMG_5999–6003 (rosto de criança em sombra fria; você +0,8…+1,1 EV, qualquer modelo global ~+0,3): depende de localizar o rosto.

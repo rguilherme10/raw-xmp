@@ -116,6 +116,10 @@ def cmd_calibrate(a) -> int:
     LOGGER.info(f"{s['n_pairs']} par(es) CR2+XMP comparados")
     for k, v in s["parameters"].items():
         print(f"  {k:<34} n={v['n']:<3}/{v['n_total']:<3} viés {v['bias']:+8.3f}  MAE {v['mae']:7.3f}  RMSE {v['rmse']:7.3f}  corr {v['corr']}" + ("  [preset]" if v.get("synced_preset") else ""))
+    if s.get("highlight_anchor"):
+        h = s["highlight_anchor"]
+        print(f"Âncora nas altas luzes (exposição ≈ {h['intercept']:+.2f} {h['slope']:+.2f}·log2(p99); n={h['n']}): erro {h['mae_without']} → "
+              f"{h['mae_with_loo']} EV (validação leave-one-out) — " + ("RECOMENDADO (gravado com --write-style)" if h["recommended"] else "ganho insuficiente, não recomendado"))
     if s.get("estimate_gain"):
         print("Ganho da estimativa por foto (1,0 = seguir tudo; ~0 = você mantém o valor do estilo):",
               ", ".join(f"{k} {v}" for k, v in s["estimate_gain"].items()))

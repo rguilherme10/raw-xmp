@@ -57,3 +57,40 @@ def test_estimate_gain_scales_only_the_image_part(decisions, cfg):
     d0 = analyze_raw(base.info.path, zero)
     assert d0.params["Highlights2012"] == 0 and d0.params["Shadows2012"] == 0       # style bias is 0 in the base style
     assert base.params["Highlights2012"] < 0                                         # full gain keeps the measured correction
+
+
+# ---- highlight anchor (57 real pairs: features + rows) ---------------------------------------------------------
+def _anchor_rows():
+    fn = Path(__file__).parent / "data" / "real_anchor_t6i.csv"
+    return [{"file": r["file"], "skin_conf": float(r["skin_conf"]), "y_p99": float(r["y_p99"]),
+             "Exposure2012_algo": float(r["Exposure2012_algo"]), "Exposure2012_human": float(r["Exposure2012_human"])}
+            for r in csv.DictReader(open(fn, encoding="utf-8"))]
+
+
+def test_highlight_anchor_is_fitted_and_validated_on_real_pairs():
+    from rawxmp.calibration.calibrate import fit_highlight_anchor
+    a = fit_highlight_anchor(_anchor_rows(), load_config())
+    assert a["n"] == 57 and a["recommended"]
+    assert -0.8 < a["slope"] < -0.35 and 0.0 < a["intercept"] < 0.3            # human ~ 0.09 - 0.55*log2(p99)
+    assert a["mae_with_loo"] < a["mae_without"] - 0.02                          # leave-one-out, not in-sample
+
+
+def test_anchor_needs_enough_individual_edits():
+    from rawxmp.calibration.calibrate import fit_highlight_anchor
+    assert fit_highlight_anchor(_anchor_rows()[:10], load_config()) is None
+
+
+def test_anchor_off_by_default_and_blends_only_when_skin_is_not_in_charge(decisions, cfg):
+    from rawxmp.config import Config
+    from rawxmp.exposure.estimator import estimate_exposure
+    from rawxmp.skin.detector import SkinResult
+    assert cfg.get("exposure.highlight_anchor.enabled") is False
+    on = Config({**cfg.data, "exposure": {**cfg.data["exposure"], "highlight_anchor": {"enabled": True, "slope": -1.0, "intercept": 2.0, "weight": 0.9}}})
+    st = decisions["no_skin"].stats
+    off_v = estimate_exposure(st, SkinResult(), cfg)["exposure"].value
+    on_v = estimate_exposure(st, SkinResult(), on)
+    assert on_v["exposure"].value != off_v and "ancora" in on_v["exposure"].reason
+    confident = SkinResult(detected=True, confidence=0.9, median_y=0.12)
+    a = estimate_exposure(st, confident, cfg)["exposure"].value
+    b = estimate_exposure(st, confident, on)["exposure"].value
+    assert a == b                                                               # confident skin: the anchor stays out

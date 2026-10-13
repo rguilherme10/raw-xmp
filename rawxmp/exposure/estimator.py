@@ -76,6 +76,17 @@ def estimate_exposure(stats: ImageStats, skin: SkinResult, cfg, style_bias: floa
         parts.append(f"limitado pelas altas luzes (p99 Y={p99:.2f} → máx. +{allowed_up:.2f} EV)")
     delta = clamp(delta, -ex["max_correction_stops"], ex["max_correction_stops"])
 
+    # Optional, calibrated per style: photographers who expose for the brightest tones (measured: human ~ a + b*log2(p99),
+    # b ~ -0.55, ignoring the median).  The weight shrinks as skin takes over (skin is better when confident).
+    ha = ex.get("highlight_anchor") or {}
+    if ha.get("enabled"):
+        w_skin = (skin_weight(skin.confidence, ex) / ex["skin_weight"]) if skin.detected else 0.0
+        a = ha["weight"] * (1.0 - w_skin)
+        if a > 0.01:
+            model = clamp(ha["intercept"] + ha["slope"] * float(np.log2(p99)), -ex["max_correction_stops"], ex["max_correction_stops"])
+            delta = (1 - a) * delta + a * model
+            parts.append(f"ancora nas altas luzes (estilo): modelo {model:+.2f} EV (p99 Y={p99:.2f}), peso {a:.2f}")
+
     delta += style_bias
     if abs(delta) < ex["rounding"]:
         delta = 0.0
